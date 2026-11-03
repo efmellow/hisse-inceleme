@@ -1,0 +1,1165 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Hisse İnceleme Paneli</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Düzen: araştırma defteri — üstte yapışkan başlık ve sekmeler, altında sekme başına tek çalışma yüzeyi; hisse ayrıntısı sağdan açılan çekmecede. */
+:root{
+  --bg:#EEF1F5; --surface:#FFFFFF; --surface-2:#F5F7FA; --sunk:#E4E8EE;
+  --ink:#111722; --ink-2:#465163; --ink-3:#768195; --line:#D9DFE7; --line-2:#B9C2CF;
+  --accent:#2340B5; --accent-ink:#FFFFFF; --accent-soft:#E2E7F8;
+  --sb:#0B7A4A; --b:#3E9E66; --h:#7F8A9C; --s:#D0661C; --ss:#BE2F28;
+  --tint:20%; --star:#C98F0C;
+  --f-disp:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:6px; --shadow:0 1px 2px rgb(17 23 34/.06),0 8px 24px -12px rgb(17 23 34/.18);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C1016; --surface:#141A22; --surface-2:#19202A; --sunk:#0F141B;
+  --ink:#E7ECF3; --ink-2:#A8B3C2; --ink-3:#768294; --line:#252E3B; --line-2:#3A4555;
+  --accent:#8EA2FF; --accent-ink:#0C1016; --accent-soft:#1D2644;
+  --sb:#35C485; --b:#74C793; --h:#8C97A8; --s:#F08C4E; --ss:#F2665C;
+  --tint:26%; --shadow:0 1px 2px rgb(0 0 0/.4),0 10px 30px -12px rgb(0 0 0/.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1016; --surface:#141A22; --surface-2:#19202A; --sunk:#0F141B;
+  --ink:#E7ECF3; --ink-2:#A8B3C2; --ink-3:#768294; --line:#252E3B; --line-2:#3A4555;
+  --accent:#8EA2FF; --accent-ink:#0C1016; --accent-soft:#1D2644;
+  --sb:#35C485; --b:#74C793; --h:#8C97A8; --s:#F08C4E; --ss:#F2665C;
+  --tint:26%; --shadow:0 1px 2px rgb(0 0 0/.4),0 10px 30px -12px rgb(0 0 0/.6); color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+.num,.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.wrap{max-width:1440px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* başlık */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line)}
+.top-row{display:flex;align-items:center;gap:16px;padding-block:12px 8px;flex-wrap:wrap}
+.brand{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.brand h1{font-family:var(--f-disp);font-stretch:118%;font-weight:750;font-size:20px;letter-spacing:-.01em;margin:0;line-height:1.1}
+.brand p{margin:2px 0 0;color:var(--ink-3);font-size:12px}
+.search{position:relative;flex:1 1 260px;max-width:380px}
+.search input{width:100%;height:36px;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--r);padding:0 12px 0 32px}
+.search svg{position:absolute;left:10px;top:10px;width:16px;height:16px;color:var(--ink-3)}
+.sugg{position:absolute;left:0;right:0;top:40px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);max-height:320px;overflow:auto;z-index:5}
+.sugg button{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:8px 12px}
+.sugg button:hover,.sugg button[aria-selected="true"]{background:var(--accent-soft)}
+.sugg small{color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:none;padding:9px 12px 10px;color:var(--ink-2);font-weight:500;border-bottom:2px solid transparent;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.tab .cnt{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);margin-left:4px}
+
+main{padding-block:20px 64px}
+section[hidden]{display:none}
+.h2{font-family:var(--f-disp);font-stretch:112%;font-weight:700;font-size:15px;letter-spacing:.01em;margin:0}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.muted{color:var(--ink-3)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r)}
+.panel-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:14px 16px 10px;flex-wrap:wrap}
+.panel-b{padding:0 16px 16px}
+
+/* not rozetleri */
+.pill{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.03em;white-space:nowrap;
+  background:color-mix(in oklab,var(--c) var(--tint),var(--surface));color:color-mix(in oklab,var(--c) 75%,var(--ink));border:1px solid color-mix(in oklab,var(--c) 40%,transparent)}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--c)}
+.c4{--c:var(--sb)}.c3{--c:var(--b)}.c2{--c:var(--h)}.c1{--c:var(--s)}.c0{--c:var(--ss)}
+.heat{background:color-mix(in oklab,var(--c) var(--tint),transparent)}
+
+/* genel bakış */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.kpi{background:var(--surface);padding:14px 16px}
+.kpi b{display:block;font-family:var(--f-disp);font-stretch:110%;font-weight:700;font-size:26px;line-height:1.1;margin-top:4px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:12px;color:var(--ink-3)}
+.ov-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.ov-side{display:grid;gap:16px;align-content:start;min-width:0}
+.lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+@media (max-width:900px){.ov-grid{grid-template-columns:1fr}}
+.dist{display:flex;height:34px;border-radius:4px;overflow:hidden;gap:2px}
+.dist button{border:0;background:var(--c);color:var(--surface);font-family:var(--f-mono);font-size:12px;font-weight:600;min-width:0;padding:0;position:relative}
+.dist-l{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--ink-2)}
+.dist-l i{display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c);margin-right:5px}
+.rank{list-style:none;margin:0;padding:0}
+.rank li{border-top:1px solid var(--line)}
+.rank li:first-child{border-top:0}
+.rank button{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:4px 10px;width:100%;border:0;background:none;text-align:left;padding:7px 0}
+.rank button:hover .tk{color:var(--accent)}
+.rank .tk{font-family:var(--f-mono);font-weight:600}
+.rank .sub{grid-column:2/4;font-size:12px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank .right{display:flex;align-items:center;gap:8px}
+.rank .val{font-family:var(--f-mono);font-weight:600;min-width:36px;text-align:right}
+.empty-note{color:var(--ink-3);font-size:13px;padding:8px 0}
+
+/* saçılım */
+.scatter{position:relative}
+.scatter svg{display:block;width:100%;height:auto;overflow:visible}
+.scatter .ax{stroke:var(--line)}
+.scatter .mid{stroke:var(--line-2);stroke-dasharray:3 4}
+.scatter text{fill:var(--ink-3);font-size:11px;font-family:var(--f-body)}
+.scatter .ql{fill:var(--ink-3);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.scatter circle{stroke:var(--surface);stroke-width:1.2;cursor:pointer}
+.scatter circle:hover,.scatter circle.hl{stroke:var(--ink);stroke-width:2}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;padding:6px 8px;border-radius:4px;white-space:nowrap;z-index:4;transform:translate(-50%,-120%)}
+.tip b{font-family:var(--f-mono)}
+
+/* tarama */
+.screen-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;height:30px;padding:0 12px;font-size:13px;color:var(--ink-2);white-space:nowrap}
+.chip:hover{border-color:var(--line-2);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.chip .n{font-family:var(--f-mono);font-size:11px;opacity:.75;margin-left:6px}
+.preset-desc{font-size:13px;color:var(--ink-2);margin:-4px 0 12px;min-height:1em}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px 20px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.fgroup{display:flex;flex-direction:column;gap:6px;min-width:0}
+.fgroup>label,.fgroup>.lab{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.notes-f{display:flex;flex-wrap:wrap;gap:6px}
+.notes-f button{height:26px;border-radius:4px;border:1px solid var(--line);background:var(--surface);font-size:11px;font-weight:600;padding:0 8px;color:var(--ink-2)}
+.notes-f button[aria-pressed="true"]{background:color-mix(in oklab,var(--c) var(--tint),var(--surface));border-color:var(--c);color:var(--ink)}
+select,.inp{height:32px;border:1px solid var(--line);background:var(--surface-2);border-radius:var(--r);padding:0 8px;min-width:0;max-width:100%}
+.mins{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.mins label{display:flex;flex-direction:column;font-size:11px;color:var(--ink-3);gap:2px}
+.mins input{height:30px;width:100%;border:1px solid var(--line);background:var(--surface-2);border-radius:4px;padding:0 6px;font-family:var(--f-mono)}
+.toggles{display:flex;flex-wrap:wrap;gap:6px 14px}
+.toggles label{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+.tbar{display:flex;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tbar .count{font-size:13px;color:var(--ink-2);margin-right:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.seg button{border:0;background:var(--surface);padding:0 10px;height:30px;font-size:12px;color:var(--ink-2)}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.btn{height:30px;border:1px solid var(--line);background:var(--surface);border-radius:var(--r);padding:0 10px;font-size:12px;color:var(--ink-2)}
+.btn:hover{border-color:var(--line-2);color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+details.fwrap>summary{list-style:none;cursor:pointer;padding:10px 16px;font-weight:600;font-size:13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between}
+details.fwrap>summary::-webkit-details-marker{display:none}
+details.fwrap>summary .muted{font-weight:400}
+
+.tscroll{overflow:auto;max-height:calc(100vh - 240px);min-height:320px}
+table.grid{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+.grid th,.grid td{padding:0 8px;height:36px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+.grid thead th{position:sticky;background:var(--surface);z-index:2;font-weight:600;color:var(--ink-2);font-size:12px}
+.grid thead tr.g th{top:0;height:26px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);text-align:left;border-bottom:0}
+.grid thead tr.c th{top:26px;cursor:pointer;user-select:none}
+.grid thead tr.c th[aria-sort="ascending"]::after{content:" ↑";color:var(--accent)}
+.grid thead tr.c th[aria-sort="descending"]::after{content:" ↓";color:var(--accent)}
+.grid .l{text-align:left}
+.grid .gs{border-left:1px solid var(--line-2);padding-left:12px}
+.grid thead tr.g th.gs{border-left:1px solid var(--line-2)}
+.grid tbody tr:hover td{background:var(--surface-2)}
+.grid .stk{position:sticky;left:0;z-index:1;background:var(--surface);width:34px;min-width:34px;padding:0 4px}
+.grid .stk2{position:sticky;left:34px;z-index:1;background:var(--surface);box-shadow:1px 0 0 var(--line)}
+.grid thead .stk,.grid thead .stk2{z-index:3}
+.grid tbody tr:hover .stk,.grid tbody tr:hover .stk2{background:var(--surface-2)}
+.star{border:0;background:none;width:26px;height:26px;color:var(--line-2);font-size:16px;line-height:1;padding:0}
+.star[aria-pressed="true"]{color:var(--star)}
+.tkb{border:0;background:none;padding:0;text-align:left;display:flex;flex-direction:column;max-width:230px}
+.tkb b{font-family:var(--f-mono);font-weight:600;font-size:13px}
+.tkb:hover b{color:var(--accent)}
+.tkb small{font-size:11px;color:var(--ink-3);overflow:hidden;text-overflow:ellipsis;max-width:230px;font-weight:400}
+.dc{font-family:var(--f-mono);font-variant-numeric:tabular-nums;width:46px;text-align:center!important;padding:0!important}
+.dc span{display:inline-block;min-width:38px;padding:3px 0;border-radius:3px}
+.tot{font-family:var(--f-mono);font-weight:600;font-size:14px}
+.qc{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.grid td.qcol,.grid th.qcol{width:92px;min-width:92px;max-width:92px}
+.qbar{display:block;height:3px;background:var(--sunk);border-radius:2px;margin-top:3px;overflow:hidden}
+.qbar i{display:block;height:100%;background:var(--accent)}
+.delta{font-family:var(--f-mono);font-size:12px}
+.up{color:var(--sb)} .dn{color:var(--ss)}
+.rules{display:inline-flex;gap:3px}
+.rule{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:3px;font-size:10.5px;font-weight:700;font-family:var(--f-mono);background:var(--sunk);color:var(--ink-2)}
+.rule.C{background:color-mix(in oklab,var(--ss) 18%,var(--surface));color:color-mix(in oklab,var(--ss) 80%,var(--ink))}
+.rule.B{background:color-mix(in oklab,var(--sb) 18%,var(--surface));color:color-mix(in oklab,var(--sb) 80%,var(--ink))}
+.rule.K{background:color-mix(in oklab,var(--s) 22%,var(--surface));color:color-mix(in oklab,var(--s) 80%,var(--ink))}
+.age{color:var(--ink-3);font-size:12px}
+.age.old{color:var(--s)}
+.legacy-tag{font-size:10px;font-family:var(--f-mono);color:var(--ink-3);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-left:6px}
+.more{display:flex;justify-content:center;padding:12px}
+
+/* sektörler */
+.sec-table td.l b{font-weight:600}
+.sec-table tbody tr{cursor:pointer}
+
+/* karşılaştır */
+.cmp-pick{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.cmp-chip{display:inline-flex;align-items:center;gap:6px;height:30px;border-radius:999px;background:var(--accent-soft);padding:0 6px 0 12px;font-family:var(--f-mono);font-weight:600}
+.cmp-chip button{border:0;background:none;width:22px;height:22px;border-radius:50%;color:var(--ink-2)}
+.cmp-chip button:hover{background:var(--surface)}
+.cmp-table th,.cmp-table td{text-align:center}
+.cmp-table td.l,.cmp-table th.l{text-align:left}
+.cmp-table tr.sep td{height:28px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);background:var(--surface-2);text-align:left;font-weight:600}
+
+/* kayıt defteri */
+.log-day{padding:12px 16px 4px;font-family:var(--f-disp);font-stretch:110%;font-weight:700;font-size:13px;color:var(--ink-2);border-top:1px solid var(--line);display:flex;justify-content:space-between}
+.log-day:first-child{border-top:0}
+.log-row{display:grid;grid-template-columns:70px 120px 60px minmax(0,1fr) auto;gap:10px;align-items:center;padding:6px 16px}
+.log-row:hover{background:var(--surface-2)}
+.log-row .tk{font-family:var(--f-mono);font-weight:600;border:0;background:none;padding:0;text-align:left}
+.log-row .tk:hover{color:var(--accent)}
+.log-row .th{color:var(--ink-3);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-row .chg{font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+@media (max-width:640px){.log-row{grid-template-columns:62px 1fr auto}.log-row .th,.log-row .tt{display:none}}
+
+/* yöntem */
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.method p,.method li{color:var(--ink-2);max-width:68ch}
+.method ul{padding-left:18px;margin:6px 0}
+.bands{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;margin:10px 0 4px}
+.bands div{padding:6px 4px;font-size:11px;font-weight:600;text-align:center;border-radius:3px}
+.bands-x{display:grid;grid-template-columns:repeat(5,1fr);font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.crit{display:grid;grid-template-columns:34px 1fr;gap:2px 8px;font-size:13px}
+.crit b{font-family:var(--f-mono);font-weight:600;color:var(--ink-2)}
+
+/* çekmece */
+.scrim{position:fixed;inset:0;background:rgb(10 14 20/.4);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(600px,100%);background:var(--surface);z-index:41;box-shadow:var(--shadow);display:flex;flex-direction:column;border-left:1px solid var(--line)}
+.dr-head{padding:calc(14px + env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) 14px 20px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.dr-top{display:flex;align-items:center;gap:10px}
+.dr-top h2{font-family:var(--f-mono);font-weight:600;font-size:24px;margin:0;letter-spacing:-.01em}
+.dr-top .x{margin-left:auto;border:1px solid var(--line);background:var(--surface);width:32px;height:32px;border-radius:var(--r);font-size:18px;line-height:1}
+.dr-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--ink-3)}
+.dr-meta b{color:var(--ink-2);font-weight:500}
+.dr-body{overflow:auto;padding:16px max(20px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) 20px;display:flex;flex-direction:column;gap:22px}
+.dr-tema{font-size:14px;color:var(--ink);margin:0}
+.report-text{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.65;margin:12px 0 0}
+.report-rendered{white-space:normal}
+.report-rendered p{margin:0 0 14px}
+.report-rendered h4{font-size:15px;margin:14px 0 8px}
+.report-note{border:1px solid var(--line);border-radius:8px;padding:12px;font-size:12px;line-height:1.6}
+.report-note ul{padding-left:18px;margin:8px 0 0}
+.report-details summary{cursor:pointer;font-weight:600}
+.score-head{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.big{font-family:var(--f-disp);font-stretch:112%;font-weight:750;font-size:44px;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:16px;color:var(--ink-3);font-weight:500}
+.scale{position:relative;height:28px}
+.scale .track{display:grid;grid-template-columns:35fr 15fr 18fr 12fr 20fr;height:6px;border-radius:3px;overflow:hidden;gap:1px;margin-top:6px}
+.scale .track i{background:color-mix(in oklab,var(--c) 55%,var(--surface))}
+.scale .mk{position:absolute;top:0;width:2px;height:16px;background:var(--ink);transform:translateX(-1px)}
+.scale .ticks{position:relative;height:14px;font-family:var(--f-mono);font-size:10px;color:var(--ink-3)}
+.scale .ticks span{position:absolute;transform:translateX(-50%)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:8px}
+.dims{display:grid;gap:7px}
+.dimrow{display:grid;grid-template-columns:96px 1fr 38px 34px;align-items:center;gap:10px;font-size:13px}
+.dimrow .w{font-family:var(--f-mono);font-size:11px;color:var(--ink-3);text-align:right}
+.dimrow .v{font-family:var(--f-mono);font-weight:600;text-align:right}
+.bar{height:8px;background:var(--sunk);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--c);border-radius:4px}
+.extra{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.extra div{background:var(--surface-2);padding:10px 12px}
+.extra b{display:block;font-family:var(--f-mono);font-size:20px;font-weight:600}
+.extra span{font-size:12px;color:var(--ink-3)}
+.critgrid{display:grid;gap:10px}
+.critdim{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:4px}
+.cc{display:grid;grid-template-columns:28px 1fr 34px;align-items:center;gap:6px;padding:4px 6px;border-radius:4px;font-size:12px;background:var(--surface-2)}
+.cc b{font-family:var(--f-mono);font-size:11px;color:var(--ink-3)}
+.cc .cv{font-family:var(--f-mono);font-weight:600;text-align:right;border-radius:3px;padding:1px 3px}
+.cc .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink-2)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.facts div{background:var(--surface);padding:8px 10px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.facts span{font-size:11.5px;color:var(--ink-3)}
+.facts b{font-family:var(--f-mono);font-weight:500;font-size:13.5px}
+.seq{display:flex;gap:4px;flex-wrap:wrap}
+.seq span{font-family:var(--f-mono);font-size:12px;padding:2px 6px;border-radius:3px;background:var(--sunk)}
+.hist{width:100%;border-collapse:collapse;font-size:13px}
+.hist td{padding:6px 4px;border-top:1px solid var(--line)}
+.hist td:nth-child(n+3){text-align:right}
+.note-area{width:100%;min-height:80px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2);padding:8px 10px;resize:vertical}
+.foot{font-size:12px;color:var(--ink-3)}
+.dr-actions{display:flex;gap:8px;flex-wrap:wrap}
+.data-status{padding:12px;border:1px solid var(--line);border-radius:var(--r);font-size:12px;margin-bottom:18px}
+.data-status dl{display:grid;grid-template-columns:minmax(105px,1fr) minmax(0,2fr);gap:6px 12px;margin:10px 0 0}
+.data-status dt{color:var(--ink-3)}.data-status dd{margin:0;overflow-wrap:anywhere}
+.status-tags{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.status-tag{border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:var(--ink-2)}
+.status-note{font-size:12px;color:var(--ink-3);line-height:1.6}.status-panels{display:grid;gap:16px}
+
+.state{padding:48px 16px;text-align:center;color:var(--ink-2)}
+.state h3{font-family:var(--f-disp);font-stretch:112%;margin:0 0 6px;color:var(--ink)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:var(--r);font-size:13px;z-index:60}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .18s ease-out}@keyframes slide{from{transform:translateX(24px);opacity:.6}}}
+@media (max-width:640px){.brand h1{font-size:18px}.mins{grid-template-columns:repeat(4,minmax(0,1fr))}.dimrow{grid-template-columns:84px 1fr 34px 30px}.big{font-size:38px}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <div class="brand">
+        <h1>Hisse İnceleme Paneli</h1>
+        <p id="sub">Arşiv yükleniyor…</p>
+      </div>
+      <div class="search" role="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Ticker, tema ya da sektör ara" autocomplete="off" aria-label="Hisse ara">
+        <div id="sugg" class="sugg" role="listbox" hidden></div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Bölümler">
+      <button class="tab" role="tab" data-tab="genel" aria-selected="true">Genel bakış</button>
+      <button class="tab" role="tab" data-tab="tarama" aria-selected="false">Tarama<span class="cnt" id="cnt-tarama"></span></button>
+      <button class="tab" role="tab" data-tab="sektor" aria-selected="false">Sektörler</button>
+      <button class="tab" role="tab" data-tab="karsilastir" aria-selected="false">Karşılaştır<span class="cnt" id="cnt-cmp"></span></button>
+      <button class="tab" role="tab" data-tab="defter" aria-selected="false">Kayıt defteri</button>
+      <button class="tab" role="tab" data-tab="yontem" aria-selected="false">Yöntem</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div id="state" class="state">
+    <h3>Arşiv yükleniyor</h3>
+    <p>İnceleme kayıtları data/reviews.js dosyasından okunuyor.</p>
+  </div>
+
+  <section id="v-genel" hidden>
+    <div class="kpis" id="kpis"></div>
+    <div class="ov-grid">
+      <div class="panel">
+        <div class="panel-h"><h2 class="h2">Kalite × Değerleme</h2><span class="muted" style="font-size:12px">Nokta rengi not; tıklayınca ayrıntı açılır</span></div>
+        <div class="panel-b"><div class="scatter" id="scatter"></div></div>
+      </div>
+      <div class="ov-side">
+        <div class="panel">
+          <div class="panel-h"><h2 class="h2">Not dağılımı</h2><span class="muted" style="font-size:12px" id="dist-n"></span></div>
+          <div class="panel-b"><div class="dist" id="dist"></div><div class="dist-l" id="dist-l"></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-h"><h2 class="h2">Sektör özeti</h2><button class="btn" data-go="sektor">Tümü</button></div>
+          <div class="panel-b" style="padding:0"><div style="overflow-x:auto"><table class="grid" id="sec-mini"></table></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="lists" id="lists"></div>
+  </section>
+
+  <section id="v-tarama" hidden>
+    <div class="screen-bar" id="presets" aria-label="Hazır taramalar"></div>
+    <p class="preset-desc" id="preset-desc"></p>
+    <div class="panel">
+      <details class="fwrap" id="fwrap" open>
+        <summary><span>Filtreler <span class="muted" id="factive"></span></span><span class="muted">aç / kapat</span></summary>
+        <div class="filters">
+          <div class="fgroup"><span class="lab">Not</span><div class="notes-f" id="f-not"></div></div>
+          <div class="fgroup"><label for="f-sec">Sektör</label><select id="f-sec"><option value="">Tüm sektörler</option></select></div>
+          <div class="fgroup"><label for="f-size">Piyasa değeri</label>
+            <select id="f-size"><option value="">Hepsi</option><option value="mega">Mega · 200 mlr $ üstü</option><option value="large">Büyük · 10–200 mlr $</option><option value="mid">Orta · 2–10 mlr $</option><option value="small">Küçük · 2 mlr $ altı</option></select></div>
+          <div class="fgroup"><span class="lab">En az puan (0–10)</span>
+            <div class="mins">
+              <label>Toplam<input id="m-tot" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Kalite<input id="m-kal" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Değerleme<input id="m-D" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Beklenti<input id="m-B" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Büyüme<input id="m-G" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Kârlılık<input id="m-M" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Bilanço<input id="m-N" type="number" min="0" max="10" step="0.5" inputmode="decimal"></label>
+              <label>Potans. %<input id="m-up" type="number" step="5" inputmode="decimal"></label>
+            </div></div>
+          <div class="fgroup"><span class="lab">Koşullar</span>
+            <div class="toggles">
+              <label><input type="checkbox" id="t-star"> İzleme listem</label>
+              <label><input type="checkbox" id="t-cash"> Net nakit</label>
+              <label><input type="checkbox" id="t-div"> Temettü öder</label>
+              <label><input type="checkbox" id="t-full"> Tam kapsam</label>
+              <label><input type="checkbox" id="t-noc"> Zayıf halkasız</label>
+              <label><input type="checkbox" id="t-stale"> 14 günden eski</label>
+              <label><input type="checkbox" id="t-legacy"> v9 öncesini de göster</label>
+            </div></div>
+        </div>
+      </details>
+      <div class="tbar">
+        <span class="count" id="count"></span>
+        <div class="seg" role="group" aria-label="Sütun görünümü">
+          <button data-view="puan" aria-pressed="true">Puanlar</button>
+          <button data-view="temel" aria-pressed="false">Temel veriler</button>
+          <button data-view="hepsi" aria-pressed="false">Hepsi</button>
+        </div>
+        <button class="btn" id="reset">Filtreleri sıfırla</button>
+        <button class="btn" id="csv">CSV indir</button>
+      </div>
+      <div class="tscroll" id="tscroll"><table class="grid" id="tbl"></table></div>
+    </div>
+  </section>
+
+  <section id="v-sektor" hidden>
+    <div class="panel">
+      <div class="panel-h"><h2 class="h2">Sektörlere göre ortalamalar</h2><span class="muted" style="font-size:12px">Yalnız v9+ son incelemeler · satıra tıklayınca taramada açılır</span></div>
+      <div style="overflow-x:auto"><table class="grid sec-table" id="sec-tbl"></table></div>
+    </div>
+  </section>
+
+  <section id="v-karsilastir" hidden>
+    <div class="panel">
+      <div class="cmp-pick">
+        <span class="h2" style="margin-right:6px">Karşılaştır</span>
+        <span id="cmp-chips" style="display:contents"></span>
+        <input class="inp" id="cmp-in" list="dl-t" placeholder="Ticker ekle" style="width:140px;text-transform:uppercase">
+        <datalist id="dl-t"></datalist>
+        <button class="btn primary" id="cmp-add">Ekle</button>
+        <span class="muted" style="font-size:12px">En fazla 4 hisse. Tablodaki ya da çekmecedeki “Karşılaştır” ile de eklenir.</span>
+      </div>
+      <div id="cmp-body" style="overflow-x:auto"></div>
+    </div>
+  </section>
+
+  <section id="v-defter" hidden>
+    <div class="panel">
+      <div class="panel-h"><h2 class="h2">Tüm incelemeler, en yeniden eskiye</h2>
+        <div class="seg" role="group" aria-label="Defter süzgeci">
+          <button data-log="all" aria-pressed="true">Hepsi</button>
+          <button data-log="chg" aria-pressed="false">Not değişenler</button>
+          <button data-log="re" aria-pressed="false">Yeniden incelenenler</button>
+        </div></div>
+      <div id="log"></div>
+      <div class="more" id="log-more" hidden><button class="btn">Daha eski kayıtları göster</button></div>
+    </div>
+  </section>
+
+  <section id="v-yontem" hidden>
+    <div class="method" id="method"></div>
+  </section>
+</main>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="dr-t" hidden></aside>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="data/reviews.js"></script>
+<script>
+(() => {
+"use strict";
+// ---------- sabitler ----------
+const NOTES = ["STRONG SELL","SELL","HOLD","BUY","STRONG BUY"];
+const NOTE_TR = {"STRONG SELL":"Strong Sell","SELL":"Sell","HOLD":"Hold","BUY":"Buy","STRONG BUY":"Strong Buy"};
+const DIMS = [["D","Değerleme",25],["B","Beklenti",22],["G","Büyüme",16],["M","Kârlılık",20],["N","Bilanço",17]];
+const CRIT = {
+  D1:"Temettülü PEG",D2:"EV/gelir ÷ büyüme",D3:"FCF getirisi + büyüme",D4:"EV/FAVÖK",D5:"İleri F/K ÷ geçmiş",
+  B1:"EPS revizyonu",B2:"Kâr ivmesi",B3:"Son 4 çeyrek sürpriz",B4:"Hedef potansiyeli",B5:"Konsensüs",B6:"Konsensüs değişimi",B7:"90 gün analist yönü",B8:"Açığa satış",B9:"EPS tahmin dağılımı",
+  G1:"Son çeyrek büyüme",G2:"3 yıllık tahmin",G3:"TTM EPS büyümesi",G4:"Gelecek yıl gelir",G5:"10 yıllık istikrar",
+  M1:"Brüt marj",M2:"Faaliyet marjı",M3:"EPS − gelir farkı",M4:"FCF marjı",M5:"Brüt marj değişimi",M6:"ROIC",M7:"Brüt kâr / aktif",
+  N1:"Net borç / FAVÖK",N2:"Faiz karşılama",N3:"FCF / net kâr",N4:"Seyrelme",N5:"Cari oran",N6:"Piotroski",N7:"Altman Z"};
+const RULES = {C:"Zayıf halka cezası: bir boyut eşiğin altında",B:"Uyum ya da derin değer bonusu",K:"Kapı: not en fazla HOLD",
+  "Ç":"Çerçeve: not en fazla BUY",T:"Eski sürüm kuralı (T)",Y:"Eski sürüm kuralı (Y)"};
+const AD = {yazilim:"yazılım",internet_reklam:"internet reklam",internet_platform:"internet platform",yariiletken:"yarı iletken",
+  yariiletken_ekipman:"yarı iletken ekipman",donanim_ag:"ağ donanımı",donanim_sistem:"donanım sistemleri",ems:"elektronik üretim hizmeti",
+  dagitim:"dağıtım",saglik_dagitim:"sağlık dağıtım",ilac:"ilaç",biyotek:"biyoteknoloji",saglik_urun:"tıbbi ürün",saglik_sigorta:"sağlık sigortası",
+  saglik_hizmet:"sağlık hizmeti",savunma:"savunma",havacilik_parca:"havacılık parça",makine:"makine",elektrik_ekipman:"elektrik ekipmanı",
+  insaat:"inşaat-mühendislik",demiryolu:"demiryolu",lojistik:"lojistik",havayolu:"havayolu",enerji_uretim:"petrol-gaz üretim",
+  enerji_entegre:"entegre enerji-rafineri",enerji_hizmet:"enerji hizmetleri",midstream:"midstream",elektrik:"elektrik üretimi",kimya:"kimya",
+  metal_madencilik:"metal-madencilik",degerli_maden:"değerli maden",tuketici_temel:"temel tüketim",icecek_tutun:"içecek-tütün",
+  perakende_genel:"genel perakende",perakende_ozel:"özel perakende",tuketici_marka:"tüketici markası",restoran:"restoran",otel_eglence:"otel-eğlence",
+  telekom:"telekom",medya:"medya",bt_hizmet:"BT hizmetleri",is_hizmet:"iş hizmetleri",otomotiv:"otomotiv",odeme_ag:"ödeme ağı",fintek:"fintek",konut:"konut"};
+const OZEL = {JPM:"banka",BAC:"banka",WFC:"banka",C:"banka",GS:"yatırım bankası",MS:"yatırım bankası",SOFI:"banka",SCHW:"aracı kurum-banka",
+  AMT:"REIT",EQIX:"REIT",PLD:"REIT",ALL:"sigorta",CG:"varlık yönetimi"};
+const MEGA = new Set(["NVDA","MSFT","GOOGL","GOOG","AAPL","AMZN","META","AVGO","TSM","BRK.B","LLY","TSLA","WMT","JPM","V","ORCL"]);
+const CYCL = new Set(["yarı iletken","metal-madencilik","değerli maden","kimya","petrol-gaz üretim","entegre enerji-rafineri","enerji hizmetleri","havayolu","konut","otel-eğlence"]);
+const DR = {SB:"Strong Buy",B:"Buy",H:"Hold",S:"Sell",SS:"Strong Sell"};
+const STALE = 14;
+
+// ---------- biçim ----------
+const nf = (d) => new Intl.NumberFormat("tr-TR",{minimumFractionDigits:d,maximumFractionDigits:d});
+const NF = [nf(0),nf(1),nf(2)];
+const f = (v,d=1) => v==null||!isFinite(v) ? "–" : NF[d].format(v);
+const pct = (v,d=0,sign=true) => v==null||!isFinite(v) ? "–" : (sign&&v>0?"+":"")+NF[d].format(v)+"%";
+const money = (v) => v==null ? "–" : NF[2].format(v)+" $";
+const mcap = (b) => b==null ? "–" : b>=1000 ? NF[2].format(b/1000)+" trn $" : b>=1 ? NF[b>=100?0:1].format(b)+" mlr $" : NF[0].format(b*1000)+" mn $";
+const esc = (s) => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const reportHtml = (s) => esc(s).split(/\n\s*\n/).map(block=>{
+  const formatted = block.replace(/\*\*([^*]+)\*\*/g,"<strong>$1</strong>").replace(/\n/g,"<br>");
+  const heading = formatted.match(/^#{1,3} (.*)$/s);
+  return heading ? `<h4>${heading[1]}</h4>` : `<p>${formatted}</p>`;
+}).join("");
+const band = (v) => v==null ? null : v<3.5?0:v<5?1:v<6.8?2:v<8?3:4;
+const DAY = 864e5;
+const today = new Date(); today.setHours(0,0,0,0);
+const daysAgo = (d) => Math.round((today - d)/DAY);
+const ago = (n) => n<0 ? "gelecek tarih · kontrol edilmeli" : n===0 ? "bugün" : n===1 ? "dün" : n+" gün önce";
+const fmtDate = (d) => d.toLocaleDateString("tr-TR",{day:"2-digit",month:"short",year:"numeric"});
+
+// ---------- ayrıştırma ----------
+function trNum(s){
+  s = String(s??"").replace(/†/g,"").replace(/[A-Za-z$ ]+$/,"").trim();
+  if(!s || s==="-" || s==="–") return null;
+  if(s.includes(",")) s = s.replace(/\./g,"").replace(",",".");
+  const v = parseFloat(s); return isFinite(v) ? v : null;
+}
+function parseH(h){
+  const o = {};
+  if(!h) return o;
+  for(const part of h.split(";")){
+    const i = part.indexOf("="); if(i<0) continue;
+    const k = part.slice(0,i).trim(), v = part.slice(i+1).trim();
+    if(["su","fg","de","dn","ed","gg"].includes(k)) o[k] = v.split("/").map(x=>x==="n"?null:parseFloat(x));
+    else if(["hs","gr","dr","yok"].includes(k) || k.startsWith("oz")) o[k] = v;
+    else { const n = parseFloat(v); o[k] = isFinite(n) ? n : v; }
+  }
+  return o;
+}
+function parseArsiv(line){
+  let L = String(line).replace(/^\s*ARŞİV:\s*/,"").replace(/^\s*-\s*\[stated\]\s*/,"");
+  let H = null; const hi = L.lastIndexOf("| H:");
+  if(hi>=0){ H = L.slice(hi+4).trim(); L = L.slice(0,hi); }
+  const fl = L.split(" | ").map(x=>x.trim());
+  if(fl.length < 10) return null;
+  let vi = fl.length-1; while(vi>0 && !/^v\d/.test(fl[vi])) vi--;
+  const ver = vi>0 ? fl[vi] : "";
+  const dm = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(fl[1]); if(!dm) return null;
+  const dims = fl[3].split("/");
+  const r = {t:fl[0].toUpperCase(), dstr:fl[1], d:new Date(+dm[3],+dm[2]-1,+dm[1]), dkey:dm[3]+dm[2]+dm[1],
+    p:trNum(fl[2]), tot:trNum(fl[4]), not:fl[5].toUpperCase(), tema:fl[9]||"", v:ver, H:parseH(H), hasH:!!H, mark:{}};
+  DIMS.forEach(([k],i)=>{ const s = dims[i]||""; r[k] = trNum(s); if(s.includes("†")) r.mark[k] = true; });
+  const km = /^(\d+)\/(\d+)$/.exec(fl[6]||""); r.kn = km?+km[1]:null; r.kp = km?+km[2]:null;
+  r.kur = (fl[7]||"").split(/[,\s]+/).map(x=>x.trim()).filter(x=>x && x!=="-" && x.length<=2);
+  const ep = (fl[8]||"").split("/"); r.ey = trNum(ep[0]); r.eu = trNum(ep[1]);
+  const vm = /^v(\d+)(?:\.(\d+))?/.exec(ver); r.vnum = vm ? +vm[1] + (+(vm[2]||0))/100 : 0;
+  r.band = NOTES.indexOf(r.not); if(r.band<0) r.band = band(r.tot);
+  return r;
+}
+function parsePuan(s){
+  const o = {}; if(!s) return o;
+  const re = /\b([DBGMN]\d)\s+(NM|–|-|-?\d+(?:\.\d+)?)/g; let m;
+  while((m = re.exec(s))) o[m[1]] = /^-?\d/.test(m[2]) ? parseFloat(m[2]) : (m[2]==="NM" ? "NM" : null);
+  return o;
+}
+function parseEk(s){
+  const o = {}; if(!s) return o;
+  const a = /Kalite\s+([\d.,]+)\s*\/\s*10/i.exec(s); if(a) o.kal = trNum(a[1]);
+  const b = /Sektörüne göre\s+([\d.,]+)\s*\/\s*10(?:\s*\(([^)]+)\))?/i.exec(s); if(b){ o.sek = trNum(b[1]); if(b[2]) o.sekAd = b[2].trim(); }
+  return o;
+}
+function build(docs){
+  const revs = [];
+  for(const doc of docs){
+    const data = doc.data || {};
+    const r = parseArsiv(data.arsiv||""); if(!r) continue;
+    r.id = doc.id;
+    const sm = /_(\d+)$/.exec(doc.id.replace(/_\d{8}/,"")); r.seq = sm ? +sm[1] : 1;
+    r.s = parsePuan(data.puan); Object.assign(r, parseEk(data.ek)); r.yeniden = !!data.yeniden;
+    r.analysisText = typeof data.analysis_text === "string" ? data.analysis_text : "";
+    r.sourceNote = typeof data.source_note === "string" ? data.source_note : "";
+    r.importWarnings = Array.isArray(data.import_info?.warnings) ? data.import_info.warnings.filter(v=>typeof v==="string") : [];
+    r.reportMode = data.import_info?.mode === "codex_local_preview" ? "yerel model taslağı" : "manuel aktarım";
+    r.dataStatus = window.HIP_STATUS?.records?.[doc.id] || {
+      mode:data.import_info?.mode==="codex_local_preview"?"model_draft":data.import_info?"manual_import":"legacy_archive",
+      source_observed_at:null,source_values_verified:false,criteria_recomputed:!!data.yeniden
+    };
+    const H = r.H;
+    r.sec = r.sekAd || (H.gr ? (AD[H.gr] || H.gr.replace(/_/g," ")) : (OZEL[r.t] || (Object.keys(H).some(k=>k.startsWith("oz")) ? "finans (özel)" : "—")));
+    let mc = typeof H.mc==="number" ? H.mc : null;
+    if(mc!=null && (data.mc_olcek==="milyon" || (mc>=2000 && !MEGA.has(r.t)))) mc = mc/1000;
+    r.mc = mc;
+    const P = r.p || H.p;
+    r.fk = H.fk ?? null;
+    r.up = (H.h && P) ? (H.h/P-1)*100 : null;
+    r.an = H.an ?? null; r.dr = DR[H.dr] || null; r.dy = H.dy ?? null; r.sh = H.sh ?? null;
+    r.ro = H.ro ?? null; r.bm = H.bm ?? null; r.fm = H.fm ?? null; r.g1 = H.g1 ?? null; r.g2 = H.g2 ?? null; r.gEps = H.g ?? null;
+    r.fcm = (H.fc!=null && H.gt) ? H.fc/H.gt*100 : null;
+    r.fcy = (H.fc!=null && H.mc) ? H.fc/H.mc*100 : null;
+    r.nc = typeof H.nb==="number" && H.nb<0;
+    r.nbf = (typeof H.nb==="number" && H.fa>0) ? H.nb/H.fa : null;
+    r.m50 = (H.o5 && P) ? (P/H.o5-1)*100 : null;
+    r.epsg = (r.ey && r.eu && r.ey>0) ? (r.eu/r.ey-1)*100 : null;
+    revs.push(r);
+  }
+  revs.sort((a,b)=> a.dkey<b.dkey?-1:a.dkey>b.dkey?1:a.seq-b.seq);
+  const byT = new Map();
+  for(const r of revs){ if(!byT.has(r.t)) byT.set(r.t,[]); byT.get(r.t).push(r); }
+  const tickers = [];
+  for(const [t,list] of byT){
+    const v9 = list.filter(r=>r.vnum>=9);
+    const last = v9.length ? v9[v9.length-1] : list[list.length-1];
+    const idx = list.indexOf(last);
+    last.legacy = !v9.length;
+    last.hist = list;
+    last.prev = idx>0 ? list[idx-1] : null;
+    last.chg = last.prev ? (last.prev.band!==last.band) : false;
+    last.dTot = (last.prev && last.prev.vnum>=9 && last.prev.tot!=null && last.tot!=null) ? last.tot-last.prev.tot : null;
+    last.age = daysAgo(last.d);
+    tickers.push(last);
+  }
+  // her incelemenin bir öncekine göre değişimi (defter için)
+  for(const list of byT.values()) list.forEach((r,i)=>{ r.before = i ? list[i-1] : null; });
+  return {revs, tickers, byT};
+}
+
+// ---------- durum ----------
+const S = { M:{revs:[],tickers:[],byT:new Map()}, tab:"genel", view:"puan", sort:{k:"tot",dir:-1}, preset:null,
+  f:{notes:new Set(), sec:"", size:"", mins:{}, star:false, cash:false, div:false, full:false, noc:false, stale:false, legacy:false},
+  cmp:[], prefs:{stars:[],notes:{}}, prefsRef:null, logMode:"all", logLimit:150, limit:200, open:null };
+const $ = (id) => document.getElementById(id);
+const TAB_IDS = ["genel","tarama","sektor","karsilastir","defter","yontem"];
+const store = { get(k,d){ try{ const v = localStorage.getItem("hip:"+k); return v==null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ try{ localStorage.setItem("hip:"+k,JSON.stringify(v)); return true; }catch(e){return false;} } };
+const savedView=store.get("view","puan");
+S.view = ["puan","temel","hepsi"].includes(savedView)?savedView:"puan";
+const savedCompare = store.get("cmp",[]);
+S.cmp = Array.isArray(savedCompare) ? [...new Set(savedCompare.filter(t=>typeof t==="string"))].slice(0,4) : [];
+
+const live = () => S.M.tickers.filter(r=>!r.legacy);
+const isStar = (t) => S.prefs.stars.includes(t);
+
+// ---------- taramalar ----------
+const PRESETS = [
+  {id:"sweet",ad:"Sweet spot",acik:"Büyüme ile değerin buluştuğu, iş kalitesi sektör ortalamasının üstünde olan isimler: değerleme 6+, büyüme 7+, beklenti 5+, kalite 6+.",
+    fn:r=>r.D>=6&&r.G>=7&&r.B>=5&&(r.kal??0)>=6},
+  {id:"denge",ad:"Dengeli profil",acik:"Zayıf halkası olmayanlar: beş boyutun hepsi 6 ve üstü.",fn:r=>DIMS.every(([k])=>r[k]!=null&&r[k]>=6)},
+  {id:"derin",ad:"Derin değer",acik:"Değerleme 8+; bilanço 5+ ve kalite 5+ olduğu için değer tuzağı filtresinden geçenler.",fn:r=>r.D>=8&&r.N>=5&&(r.kal??0)>=5},
+  {id:"tuzak",ad:"Değer tuzağı riski",acik:"Ucuz görünüyor (değerleme 7,5+) ama kalite 5'in, beklenti 4,5'in ya da büyüme 3,5'in altında.",fn:r=>r.D>=7.5&&((r.kal??10)<5||r.B<4.5||r.G<3.5)},
+  {id:"pahali",ad:"Kaliteli ama pahalı",acik:"Kalite 7+ ama değerleme 4,5 ve altı: iş güçlü, fiyat bunu fazlasıyla yansıtıyor. Geri çekilmede izlenecekler.",fn:r=>(r.kal??0)>=7&&r.D<=4.5},
+  {id:"ivme",ad:"Beklenti ve büyüme ivmesi",acik:"Beklenti 7,5+ ve büyüme 7,5+: analist tahminleri yukarı dönen, hızlı büyüyen isimler.",fn:r=>r.B>=7.5&&r.G>=7.5},
+  {id:"dongu",ad:"Döngüsel tepe şüphesi",acik:"Döngüsel sektörde değerleme 7+ ve büyüme 8+: düşük çarpan tepe kârdan geliyor olabilir.",fn:r=>r.D>=7&&r.G>=8&&CYCL.has(r.sec)},
+  {id:"hedef",ad:"Hedefe uzak",acik:"Konsensüs hedef fiyatına %35'ten fazla potansiyel, not en az HOLD.",fn:r=>r.up!=null&&r.up>=35&&r.band>=2},
+  {id:"geri",ad:"Geri çekilmiş BUY",acik:"BUY ve üstü, inceleme günü fiyatı 50 günlük ortalamanın %5'ten fazla altında.",fn:r=>r.band>=3&&r.m50!=null&&r.m50<=-5},
+  {id:"nakit",ad:"Net nakitli büyüme",acik:"Net nakit pozisyonunda, büyüme 7+ ve kalite 6+.",fn:r=>r.nc&&r.G>=7&&(r.kal??0)>=6},
+  {id:"temettu",ad:"Temettü ve kalite",acik:"Temettü verimi %1,5+, kalite 6+ ve not en az HOLD.",fn:r=>(r.dy??0)>=1.5&&(r.kal??0)>=6&&r.band>=2},
+  {id:"zayif",ad:"Zayıf halka cezalılar",acik:"Bir boyutu eşiğin altında kaldığı için toplamdan ceza alanlar (C kuralı).",fn:r=>r.kur.includes("C")},
+  {id:"kapi",ad:"Kapıya takılanlar",acik:"Ham puanı daha yüksek olsa da kapı kuralı notu HOLD ile sınırladı (K kuralı).",fn:r=>r.kur.includes("K")},
+  {id:"degisen",ad:"Notu değişenler",acik:"Son incelemede notu bir önceki incelemeye göre değişenler.",fn:r=>r.chg},
+  {id:"yeniden",ad:"Yeniden incelenmeli",acik:`BUY ve üstü notu ${STALE} günden eski olanlar; fiyat ve tahminler değişmiş olabilir.`,fn:r=>r.band>=3&&r.age>=STALE},
+];
+
+// ---------- filtre ----------
+function sizeOk(r,s){ if(!s) return true; const m=r.mc; if(m==null) return false;
+  return s==="mega"?m>=200 : s==="large"?m>=10&&m<200 : s==="mid"?m>=2&&m<10 : m<2; }
+function filtered(){
+  const F = S.f, q = $("q").value.trim().toLocaleLowerCase("tr-TR");
+  const pre = PRESETS.find(p=>p.id===S.preset);
+  return S.M.tickers.filter(r=>{
+    if(r.legacy && !F.legacy) return false;
+    if(pre && (r.legacy || !pre.fn(r))) return false;
+    if(F.notes.size && !F.notes.has(r.band)) return false;
+    if(F.sec && r.sec!==F.sec) return false;
+    if(!sizeOk(r,F.size)) return false;
+    for(const [k,v] of Object.entries(F.mins)){ if(v==null||v==="") continue; const x = k==="kal"?r.kal:k==="up"?r.up:r[k]; if(x==null||x<v) return false; }
+    if(F.star && !isStar(r.t)) return false;
+    if(F.cash && !r.nc) return false;
+    if(F.div && !((r.dy??0)>0)) return false;
+    if(F.full && !(r.kn!=null && r.kn===r.kp)) return false;
+    if(F.noc && r.kur.includes("C")) return false;
+    if(F.stale && r.age<STALE) return false;
+    if(q && !(r.t.toLowerCase().includes(q) || r.tema.toLocaleLowerCase("tr-TR").includes(q) || (r.sec||"").includes(q))) return false;
+    return true;
+  });
+}
+
+// ---------- tablo sütunları ----------
+const COLS = [
+  {g:"kimlik",k:"star",lab:"",cls:"stk l",nosort:true,html:r=>`<button class="star" data-star="${esc(r.t)}" aria-pressed="${isStar(r.t)}" aria-label="İzleme listesi">★</button>`},
+  {g:"kimlik",k:"t",lab:"Hisse",cls:"stk2 l",val:r=>r.t,html:r=>`<button class="tkb" data-open="${esc(r.t)}"><b>${esc(r.t)}${r.legacy?`<span class="legacy-tag">${esc(r.v)}</span>`:""}</b><small title="${esc(r.tema)}">${esc(r.tema)}</small></button>`},
+  {g:"kimlik",k:"sec",lab:"Sektör",cls:"l",val:r=>r.sec,html:r=>`<span class="muted">${esc(r.sec)}</span>`},
+  {g:"sonuc",k:"band",lab:"Not",cls:"l gs",val:r=>r.band*100+(r.tot??0),html:r=>`<span class="pill c${r.band}">${NOTE_TR[r.not]||esc(r.not)}</span>`},
+  {g:"sonuc",k:"tot",lab:"Toplam",val:r=>r.tot,html:r=>`<span class="tot">${f(r.tot,2)}</span>`},
+  {g:"sonuc",k:"dTot",lab:"Değişim",title:"Bir önceki incelemeye göre toplamdaki değişim ve not değişimi",val:r=>r.dTot,html:r=>chgCell(r)},
+  ...DIMS.map(([k,ad],i)=>({g:"boyut",k,lab:k,title:`${ad} · ağırlık %${DIMS[i][2]}`,cls:"dc"+(i===0?" gs":""),val:r=>r[k],
+    html:r=>r[k]==null?`<span class="muted">–</span>`:`<span class="heat c${band(r[k])}" title="${ad}${r.mark[k]?" · eksik veriyle ölçüldü":""}">${f(r[k])}${r.mark[k]?"†":""}</span>`})),
+  {g:"ek",k:"kal",lab:"Kalite",title:"Fiyattan bağımsız iş kalitesi; 5 ≈ sektör tipiği",cls:"gs qcol",val:r=>r.kal,html:r=>qcell(r.kal)},
+  {g:"ek",k:"sek",lab:"Sektöre göre",title:"Sektör içindeki konum; toplama girmez",cls:"qcol",val:r=>r.sek,html:r=>qcell(r.sek)},
+  {g:"temel",k:"p",lab:"Fiyat",cls:"gs num",val:r=>r.p,html:r=>f(r.p,2)},
+  {g:"temel",k:"up",lab:"Potansiyel",title:"Konsensüs hedef fiyatına uzaklık (inceleme günü)",cls:"num",val:r=>r.up,html:r=>`<span class="${r.up>0?"up":r.up<0?"dn":""}">${pct(r.up)}</span>`},
+  {g:"temel",k:"fk",lab:"İleri F/K",cls:"num",val:r=>r.fk,html:r=>f(r.fk)},
+  {g:"temel",k:"fcy",lab:"FCF getirisi",cls:"num",val:r=>r.fcy,html:r=>pct(r.fcy,1,false)},
+  {g:"temel",k:"g1",lab:"Çeyrek büyüme",cls:"num",val:r=>r.g1,html:r=>pct(r.g1)},
+  {g:"temel",k:"ro",lab:"ROIC",cls:"num",val:r=>r.ro,html:r=>pct(r.ro,0,false)},
+  {g:"temel",k:"mc",lab:"Piyasa değeri",cls:"num",val:r=>r.mc,html:r=>mcap(r.mc)},
+  {g:"kayit",k:"kn",lab:"Kapsam",cls:"gs num",val:r=>r.kp?r.kn/r.kp:null,html:r=>r.kn==null?"–":`<span class="${r.kn<r.kp*0.85?"dn":""}">${r.kn}/${r.kp}</span>`},
+  {g:"kayit",k:"kur",lab:"Kural",cls:"l",val:r=>r.kur.join(""),html:r=>rulesHtml(r.kur)},
+  {g:"kayit",k:"age",lab:"İnceleme",cls:"l",val:r=>-r.d,html:r=>`<span class="age ${r.age>=STALE?"old":""}" title="${esc(r.dstr)} · ${esc(r.v)}">${ago(r.age)}</span>`},
+];
+const GROUPS = {kimlik:"",sonuc:"Sonuç",boyut:"Boyutlar · toplama girer",ek:"Ek göstergeler · toplama girmez",temel:"Temel veriler · inceleme günü",kayit:"Kayıt"};
+const VIEWS = {puan:["kimlik","sonuc","boyut","ek","kayit"],temel:["kimlik","sonuc","temel","kayit"],hepsi:["kimlik","sonuc","boyut","ek","temel","kayit"]};
+function qcell(v){ if(v==null) return `<span class="muted">–</span>`;
+  return `<span class="qc">${f(v)}</span><span class="qbar"><i style="width:${Math.max(0,Math.min(100,v*10))}%"></i></span>`; }
+function rulesHtml(k){ return k.length ? `<span class="rules">${k.map(x=>`<span class="rule ${esc(x)}" title="${esc(RULES[x]||x)}">${esc(x)}</span>`).join("")}</span>` : `<span class="muted">–</span>`; }
+function chgCell(r){
+  if(!r.prev) return `<span class="muted">ilk</span>`;
+  const arrow = r.chg ? (r.band>r.prev.band?`<span class="up" title="Not yükseldi: ${esc(r.prev.not)} → ${esc(r.not)}">▲</span>`:`<span class="dn" title="Not düştü: ${esc(r.prev.not)} → ${esc(r.not)}">▼</span>`) : "";
+  const d = r.dTot==null ? `<span class="muted" title="Önceki inceleme ${esc(r.prev.v)}; puanlar karşılaştırılamaz">${esc(r.prev.v)}</span>` :
+    `<span class="${r.dTot>0.05?"up":r.dTot<-0.05?"dn":"muted"}">${r.dTot>0?"+":""}${f(r.dTot,2)}</span>`;
+  return `<span class="delta">${arrow} ${d}</span>`;
+}
+
+function renderTable(){
+  const groups = VIEWS[S.view];
+  const cols = COLS.filter(c=>groups.includes(c.g));
+  let rows = filtered();
+  const sc = COLS.find(c=>c.k===S.sort.k) || COLS[4];
+  rows.sort((a,b)=>{ const x=sc.val(a), y=sc.val(b);
+    if(x==null&&y==null) return 0; if(x==null) return 1; if(y==null) return -1;
+    return (typeof x==="string" ? x.localeCompare(y,"tr") : x-y) * S.sort.dir; });
+  S.rows = rows;
+  const total = live().length;
+  $("count").innerHTML = `<b>${rows.length}</b> hisse${S.f.legacy?"":" · v9+ son incelemeler"}${rows.length!==total?` <span class="muted">/ ${total}</span>`:""}`;
+  $("cnt-tarama").textContent = live().length;
+  // başlık
+  let gh = "", lastG = null, span = 0;
+  const gl = [];
+  cols.forEach(c=>{ if(c.g!==lastG){ gl.push({g:c.g,n:1}); lastG=c.g; } else gl[gl.length-1].n++; });
+  gh = gl.map((x,i)=>`<th colspan="${x.n}" class="l ${i>0?"gs":""}">${GROUPS[x.g]}</th>`).join("");
+  const ch = cols.map(c=>`<th class="${c.cls||""}" ${c.nosort?"":`data-sort="${c.k}"`} ${c.title?`title="${esc(c.title)}"`:""} ${S.sort.k===c.k?`aria-sort="${S.sort.dir>0?"ascending":"descending"}"`:""}>${c.lab}</th>`).join("");
+  const body = rows.slice(0,S.limit).map(r=>`<tr>${cols.map(c=>`<td class="${c.cls||""}">${c.html(r)}</td>`).join("")}</tr>`).join("");
+  $("tbl").innerHTML = `<thead><tr class="g">${gh}</tr><tr class="c">${ch}</tr></thead><tbody>${body||`<tr><td colspan="${cols.length}" class="l" style="height:80px;white-space:normal"><span class="muted">Bu filtrelerle eşleşen hisse yok. Bir koşulu gevşetin ya da filtreleri sıfırlayın.</span></td></tr>`}</tbody>`;
+  const more = $("tmore"); if(more) more.remove();
+  if(rows.length>S.limit) $("tscroll").insertAdjacentHTML("beforeend",`<div class="more" id="tmore"><button class="btn" data-more="1">${rows.length-S.limit} hisse daha göster</button></div>`);
+  // etkin filtre özeti
+  const a = []; if(S.f.notes.size) a.push("not"); if(S.f.sec) a.push("sektör"); if(S.f.size) a.push("büyüklük");
+  if(Object.values(S.f.mins).some(v=>v!=null&&v!=="")) a.push("puan eşikleri");
+  ["star","cash","div","full","noc","stale","legacy"].forEach(k=>{ if(S.f[k]) a.push("koşul"); });
+  $("factive").textContent = a.length ? "· "+[...new Set(a)].join(", ")+" etkin" : "";
+  document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.view===S.view));
+}
+
+function renderPresets(){
+  const L = live();
+  $("presets").innerHTML = PRESETS.map(p=>`<button class="chip" data-preset="${p.id}" aria-pressed="${S.preset===p.id}">${p.ad}<span class="n">${L.filter(p.fn).length}</span></button>`).join("");
+  const p = PRESETS.find(x=>x.id===S.preset);
+  $("preset-desc").textContent = p ? p.acik : "Hazır taramalardan birini seçin ya da aşağıdaki filtrelerle kendi taramanızı kurun.";
+}
+function renderNoteFilter(){
+  $("f-not").innerHTML = NOTES.map((n,i)=>`<button class="c${i}" data-fnot="${i}" aria-pressed="${S.f.notes.has(i)}">${NOTE_TR[n]}</button>`).reverse().join("");
+}
+function fillSectors(){
+  const secs = [...new Set(live().map(r=>r.sec))].sort((a,b)=>a.localeCompare(b,"tr"));
+  const cur = S.f.sec;
+  $("f-sec").innerHTML = `<option value="">Tüm sektörler</option>`+secs.map(s=>`<option ${s===cur?"selected":""}>${esc(s)}</option>`).join("");
+}
+
+// ---------- genel bakış ----------
+function renderOverview(){
+  const L = live(), M = S.M;
+  const avg = (a)=> a.length ? a.reduce((s,x)=>s+x,0)/a.length : null;
+  const week = M.revs.filter(r=>daysAgo(r.d)<7).length;
+  const pos = L.filter(r=>r.band>=3).length;
+  $("kpis").innerHTML = [
+    ["Takipteki hisse",L.length,"v9+ son incelemeyle"],
+    ["İnceleme kaydı",M.revs.length,"tüm sürümler"],
+    ["Son 7 gün",week,"yeni inceleme"],
+    ["Ortalama toplam",f(avg(L.map(r=>r.tot).filter(x=>x!=null)),2),"10 üzerinden"],
+    ["BUY ve üstü",pos,`%${f(L.length?pos/L.length*100:0,0)} oranında`],
+    ["Notu değişen",L.filter(r=>r.chg).length,"son incelemede"],
+  ].map(([a,b,c])=>`<div class="kpi"><span>${a}</span><b>${b}</b><span>${c}</span></div>`).join("");
+  // dağılım
+  const cnt = [0,0,0,0,0]; L.forEach(r=>cnt[r.band]++);
+  $("dist-n").textContent = L.length+" hisse";
+  $("dist").innerHTML = [4,3,2,1,0].filter(i=>cnt[i]).map(i=>`<button class="c${i}" style="flex:${cnt[i]}" data-dist="${i}" title="${NOTE_TR[NOTES[i]]}: ${cnt[i]} hisse"><span>${cnt[i]}</span></button>`).join("");
+  $("dist-l").innerHTML = [4,3,2,1,0].map(i=>`<span class="c${i}"><i></i>${NOTE_TR[NOTES[i]]} ${cnt[i]}</span>`).join("");
+  // sektör mini
+  const secs = sectorStats().sort((a,b)=>b.n-a.n).slice(0,8);
+  $("sec-mini").innerHTML = `<thead><tr class="c"><th class="l" style="position:static">Sektör</th><th style="position:static">Hisse</th><th style="position:static">Ort.</th><th class="l" style="position:static">En iyi</th></tr></thead><tbody>`+
+    secs.map(s=>`<tr style="cursor:pointer" data-sec="${esc(s.sec)}"><td class="l">${esc(s.sec)}</td><td class="num">${s.n}</td><td class="num">${f(s.tot,2)}</td><td class="l"><span class="mono">${esc(s.best.t)}</span> <span class="muted num">${f(s.best.tot,2)}</span></td></tr>`).join("")+`</tbody>`;
+  // listeler
+  const top = (arr,k,n=8)=>arr.filter(r=>r[k]!=null).sort((a,b)=>b[k]-a[k]).slice(0,n);
+  const sweet = PRESETS.find(p=>p.id==="sweet");
+  const yen = PRESETS.find(p=>p.id==="yeniden");
+  const recent = [...M.revs].reverse().slice(0,8);
+  const changed = L.filter(r=>r.chg).sort((a,b)=>b.d-a.d).slice(0,8);
+  const box = (title, items, val, sub, link) => `<div class="panel"><div class="panel-h"><h2 class="h2">${title}</h2>${link?`<button class="btn" data-preset-go="${link}">Taramada aç</button>`:""}</div><div class="panel-b"><ol class="rank">${
+    items.length ? items.map(r=>`<li><button data-open="${esc(r.t)}"><span class="tk">${esc(r.t)}</span><span class="right" style="justify-self:start"><span class="pill c${r.band}">${NOTE_TR[r.not]||esc(r.not)}</span></span><span class="val">${val(r)}</span><span class="sub">${sub(r)}</span></button></li>`).join("") : `<li class="empty-note">Şu an bu listeye giren hisse yok.</li>`}</ol></div></div>`;
+  $("lists").innerHTML = [
+    box("En yüksek toplam", top(L,"tot"), r=>f(r.tot,2), r=>esc(r.tema)),
+    box("Sweet spot", L.filter(sweet.fn).sort((a,b)=>b.tot-a.tot).slice(0,8), r=>f(r.tot,2), r=>`D ${f(r.D)} · G ${f(r.G)} · kalite ${f(r.kal)}`, "sweet"),
+    box("En yüksek kalite", top(L,"kal"), r=>f(r.kal), r=>`${esc(r.sec)} · toplam ${f(r.tot,2)}`),
+    box("Son incelemeler", recent, r=>f(r.tot,2), r=>`${esc(r.dstr)} · ${esc(r.v)}`),
+    box("Notu değişenler", changed, r=>`<span class="${r.band>r.prev.band?"up":"dn"}">${r.band>r.prev.band?"▲":"▼"}</span>`, r=>`${esc(r.prev.not)} → ${esc(r.not)} · ${esc(r.dstr)}`, "degisen"),
+    box("Yeniden incelenmeli", L.filter(yen.fn).sort((a,b)=>b.age-a.age).slice(0,8), r=>`<span class="age old">${r.age} g</span>`, r=>`${esc(r.dstr)} · toplam ${f(r.tot,2)}`, "yeniden"),
+  ].join("");
+  drawScatter();
+}
+function sectorStats(){
+  const map = new Map();
+  for(const r of live()){ if(!map.has(r.sec)) map.set(r.sec,[]); map.get(r.sec).push(r); }
+  const avg = (a,k)=>{ const v=a.map(x=>x[k]).filter(x=>x!=null); return v.length?v.reduce((s,x)=>s+x,0)/v.length:null; };
+  return [...map].map(([sec,a])=>({sec,n:a.length,tot:avg(a,"tot"),D:avg(a,"D"),B:avg(a,"B"),G:avg(a,"G"),M:avg(a,"M"),N:avg(a,"N"),kal:avg(a,"kal"),
+    pos:a.filter(r=>r.band>=3).length, best:[...a].sort((x,y)=>(y.tot??0)-(x.tot??0))[0]}));
+}
+function drawScatter(){
+  const el = $("scatter"); const W = Math.max(300, el.clientWidth||600); const H = Math.round(Math.min(460, Math.max(300, W*0.62)));
+  const m = {l:36,r:12,t:14,b:34}; const iw = W-m.l-m.r, ih = H-m.t-m.b;
+  const x = v=>m.l+v/10*iw, y = v=>m.t+(1-v/10)*ih;
+  const pts = live().filter(r=>r.D!=null && r.kal!=null);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kalite ve değerleme puanlarına göre hisseler">`;
+  for(let v=0; v<=10; v+=2){ s+=`<line class="ax" x1="${x(0)}" x2="${x(10)}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l-8}" y="${y(v)+4}" text-anchor="end">${v}</text><text x="${x(v)}" y="${H-m.b+16}" text-anchor="middle">${v}</text>`; }
+  s+=`<line class="mid" x1="${x(5)}" x2="${x(5)}" y1="${y(0)}" y2="${y(10)}"/><line class="mid" x1="${x(0)}" x2="${x(10)}" y1="${y(5)}" y2="${y(5)}"/>`;
+  s+=`<text class="ql" x="${x(9.9)}" y="${y(9.7)}" text-anchor="end">Kaliteli ve ucuz</text><text class="ql" x="${x(0.1)}" y="${y(9.7)}">Kaliteli, pahalı</text>`;
+  s+=`<text class="ql" x="${x(9.9)}" y="${y(0.3)}" text-anchor="end">Ucuz ama zayıf</text><text class="ql" x="${x(0.1)}" y="${y(0.3)}">Pahalı ve zayıf</text>`;
+  s+=`<text x="${x(5)}" y="${H-4}" text-anchor="middle" style="font-weight:600">Değerleme puanı →</text><text transform="translate(11 ${y(5)}) rotate(-90)" text-anchor="middle" style="font-weight:600">Kalite →</text>`;
+  const order = [...pts].sort((a,b)=>a.band-b.band);
+  for(const r of order){ s+=`<circle class="c${r.band}" style="fill:var(--c)" cx="${x(r.D).toFixed(1)}" cy="${y(r.kal).toFixed(1)}" r="${W<500?4:5}" data-open="${esc(r.t)}" data-tip="${esc(r.t)}"/>`; }
+  s+=`</svg><div class="tip" id="tip" hidden></div>`;
+  el.innerHTML = s;
+}
+
+// ---------- sektörler ----------
+function renderSectors(){
+  const st = sectorStats().sort((a,b)=>(b.tot??0)-(a.tot??0));
+  const cell = v=> v==null?`<td class="dc">–</td>`:`<td class="dc"><span class="heat c${band(v)}">${f(v)}</span></td>`;
+  $("sec-tbl").innerHTML = `<thead><tr class="c"><th class="l">Sektör</th><th>Hisse</th><th>BUY+</th><th class="gs">Ort. toplam</th>${DIMS.map(([k,ad],i)=>`<th class="${i===0?"gs ":""}dc" title="${ad}">${k}</th>`).join("")}<th class="gs">Ort. kalite</th><th class="l gs">En yüksek</th></tr></thead><tbody>`+
+    st.map(s=>`<tr data-sec="${esc(s.sec)}"><td class="l"><b>${esc(s.sec)}</b></td><td class="num">${s.n}</td><td class="num">${s.pos}</td><td class="gs tot">${f(s.tot,2)}</td>${DIMS.map(([k],i)=>cell(s[k]).replace('class="dc"',`class="dc${i===0?" gs":""}"`)).join("")}<td class="gs">${qcell(s.kal)}</td><td class="l gs"><span class="mono">${esc(s.best.t)}</span> <span class="pill c${s.best.band}">${NOTE_TR[s.best.not]||""}</span></td></tr>`).join("")+`</tbody>`;
+}
+
+// ---------- karşılaştır ----------
+function renderCompare(){
+  S.cmp = S.cmp.filter(t=>S.M.byT.has(t)).slice(0,4); store.set("cmp",S.cmp);
+  $("cnt-cmp").textContent = S.cmp.length ? S.cmp.length : "";
+  $("dl-t").innerHTML = S.M.tickers.map(r=>`<option value="${esc(r.t)}">`).join("");
+  $("cmp-chips").innerHTML = S.cmp.map(t=>`<span class="cmp-chip">${esc(t)}<button data-cmp-del="${esc(t)}" aria-label="${esc(t)} çıkar">×</button></span>`).join("");
+  const rs = S.cmp.map(t=>latestOf(t));
+  if(!rs.length){ $("cmp-body").innerHTML = `<div class="state"><h3>Karşılaştırma boş</h3><p>Yukarıdan ticker ekleyin. İki-dört hisseyi boyut, kriter ve temel veri düzeyinde yan yana görürsünüz.</p></div>`; return; }
+  const best = (vals,hi=true)=>{ if(hi===null) return null; const v=vals.filter(x=>x!=null&&x!=="NM"); if(v.length<2) return null; return hi?Math.max(...v):Math.min(...v); };
+  const row = (lab,get,fmt,{hi=true,heat=false,num=true}={}) => { const vals = rs.map(get); const b = best(vals,hi);
+    return `<tr><td class="l">${lab}</td>${vals.map(v=>`<td class="${heat?"dc":num?"num":""}" style="${!heat&&b!=null&&v===b?"font-weight:600;color:var(--accent)":""}">${heat?(v==null||v==="NM"?`<span class="muted">${v==="NM"?"NM":"–"}</span>`:`<span class="heat c${band(v)}">${f(v)}</span>`):fmt(v)}</td>`).join("")}</tr>`; };
+  const sep = (t)=>`<tr class="sep"><td colspan="${rs.length+1}">${t}</td></tr>`;
+  let h = `<table class="grid cmp-table"><thead><tr class="c"><th class="l" style="top:0">&nbsp;</th>${rs.map(r=>`<th style="top:0"><button class="tkb" data-open="${esc(r.t)}" style="align-items:center;margin:auto"><b>${esc(r.t)}</b></button></th>`).join("")}</tr></thead><tbody>`;
+  h += `<tr><td class="l">Not</td>${rs.map(r=>`<td><span class="pill c${r.band}">${NOTE_TR[r.not]||esc(r.not)}</span></td>`).join("")}</tr>`;
+  h += row("Toplam",r=>r.tot,v=>`<span class="tot">${f(v,2)}</span>`);
+  h += sep("Boyutlar · toplama girer");
+  DIMS.forEach(([k,ad,w])=>{ h += row(`${ad} <span class="muted">%${w}</span>`,r=>r[k],null,{heat:true}); });
+  h += sep("Ek göstergeler · toplama girmez");
+  h += row("Kalite",r=>r.kal,v=>qcell(v)); h += row("Sektöre göre",r=>r.sek,v=>qcell(v));
+  h += sep("Temel veriler · inceleme günü");
+  h += row("Fiyat",r=>r.p,v=>money(v),{hi:null});
+  h += row("Potansiyel",r=>r.up,v=>pct(v)); h += row("İleri F/K",r=>r.fk,v=>f(v),{hi:false});
+  h += row("FCF getirisi",r=>r.fcy,v=>pct(v,1,false)); h += row("FCF marjı",r=>r.fcm,v=>pct(v,0,false));
+  h += row("Son çeyrek büyüme",r=>r.g1,v=>pct(v)); h += row("3Y gelir büyümesi (tahmin)",r=>r.g2,v=>pct(v));
+  h += row("Faaliyet marjı",r=>r.fm,v=>pct(v,0,false)); h += row("ROIC",r=>r.ro,v=>pct(v,0,false));
+  h += row("Net borç / FAVÖK",r=>r.nbf,v=>v==null?"–":f(v,2),{hi:false}); h += row("Piyasa değeri",r=>r.mc,v=>mcap(v),{hi:null});
+  h += row("İnceleme",r=>r.dstr,v=>esc(v),{hi:null,num:false});
+  for(const [D,ad] of DIMS){ h += sep(`${ad} kriterleri`);
+    Object.keys(CRIT).filter(k=>k[0]===D).forEach(k=>{ h += row(`<b class="mono" style="font-weight:500;color:var(--ink-3)">${k}</b> ${CRIT[k]}`,r=>{ const v=r.s[k]; return v==="NM"?"NM":v==null?null:v*5; },null,{heat:true}); }); }
+  h += `</tbody></table>`;
+  $("cmp-body").innerHTML = h;
+}
+const latestOf = (t)=> S.M.tickers.find(r=>r.t===t);
+
+// ---------- kayıt defteri ----------
+function renderLog(){
+  let list = [...S.M.revs].reverse();
+  if(S.logMode==="chg") list = list.filter(r=>r.before && r.before.band!==r.band);
+  if(S.logMode==="re") list = list.filter(r=>r.before);
+  const shown = list.slice(0,S.logLimit);
+  let h = "", day = null;
+  for(const r of shown){
+    if(r.dstr!==day){ day=r.dstr; const n = list.filter(x=>x.dstr===day).length; h += `<div class="log-day"><span>${fmtDate(r.d)}</span><span class="muted" style="font-family:var(--f-body);font-weight:400">${n} kayıt</span></div>`; }
+    const b = r.before;
+    let chg = `<span class="muted">ilk inceleme</span>`;
+    if(b){ const dt = (b.vnum>=9 && r.vnum>=9 && b.tot!=null && r.tot!=null) ? r.tot-b.tot : null;
+      chg = (b.band!==r.band ? `<span class="${r.band>b.band?"up":"dn"}">${r.band>b.band?"▲":"▼"} ${esc(b.not)} → ${esc(r.not)}</span>` : `<span class="muted">${esc(b.dstr)}</span>`) +
+        (dt!=null ? ` <span class="${dt>0.05?"up":dt<-0.05?"dn":"muted"}">${dt>0?"+":""}${f(dt,2)}</span>` : ""); }
+    h += `<div class="log-row"><button class="tk" data-open="${esc(r.t)}">${esc(r.t)}</button><span class="tt"><span class="pill c${r.band}">${NOTE_TR[r.not]||esc(r.not)}</span></span><span class="num" style="font-weight:600">${f(r.tot,2)}</span><span class="th" title="${esc(r.tema)}">${esc(r.v)} · ${esc(r.tema)}</span><span class="chg">${chg}</span></div>`;
+  }
+  $("log").innerHTML = h || `<div class="state"><p>Bu süzgece uyan kayıt yok.</p></div>`;
+  $("log-more").hidden = list.length<=S.logLimit;
+  document.querySelectorAll("[data-log]").forEach(b=>b.setAttribute("aria-pressed",b.dataset.log===S.logMode));
+}
+
+// ---------- yöntem ----------
+function renderMethod(){
+  const crit = (D)=>Object.keys(CRIT).filter(k=>k[0]===D).map(k=>`<b>${k}</b><span>${CRIT[k]}</span>`).join("");
+  $("method").innerHTML = `
+  <div class="panel"><div class="panel-h"><h2 class="h2">Not bantları</h2></div><div class="panel-b">
+    <p>Toplam puan 33 kriterden beş boyutun ağırlıklı ortalamasıdır; zayıf halka cezası ve uyum bonusundan sonra şu bantlara düşer. Kapı ve çerçeve kuralları notu ayrıca sınırlayabilir.</p>
+    <div class="bands">${[0,1,2,3,4].map(i=>`<div class="heat c${i}">${NOTE_TR[NOTES[i]]}</div>`).join("")}</div>
+    <div class="bands-x"><span>0</span><span>3,5</span><span>5,0</span><span>6,8</span><span>8,0 – 10</span></div>
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2 class="h2">Boyutlar ve ağırlıklar</h2></div><div class="panel-b">
+    <ul>${DIMS.map(([k,ad,w])=>`<li><b class="mono">${k}</b> ${ad} · %${w}</li>`).join("")}</ul>
+    <p><b>Kalite</b> fiyattan bağımsız iş kalitesidir; marj, ROIC, nakit dönüşümü, seyrelme, büyüme istikrarı gibi kriterlerden çıkar, 5 sektör tipiğine denk gelir. <b>Sektöre göre</b> hissenin kendi sektör grubundaki konumudur. İkisi de bilgi amaçlıdır, toplama girmez; bu yüzden tabloda boyutlardan ayrı bir grupta durur.</p>
+    <p class="muted">† işareti o boyutun eksik veriyle, azaltılmış ağırlıkla ölçüldüğünü gösterir.</p>
+  </div></div>
+  <div class="panel"><div class="panel-h"><h2 class="h2">Kurallar</h2></div><div class="panel-b">
+    <div class="crit">${["C","B","K","Ç"].map(k=>`<b>${rulesHtml([k])}</b><span>${RULES[k]}</span>`).join("")}</div>
+    <p class="muted" style="margin-top:10px">Kapı: değerleme 4 ve altı, beklenti ya da bilanço 2 ve altı veya bir bayrak varsa not en fazla HOLD olur.</p>
+  </div></div>
+  ${DIMS.map(([D,ad])=>`<div class="panel"><div class="panel-h"><h2 class="h2">${ad} kriterleri</h2></div><div class="panel-b"><div class="crit">${crit(D)}</div></div></div>`).join("")}
+  <div class="panel"><div class="panel-h"><h2 class="h2">Bu panel nasıl güncellenir</h2></div><div class="panel-b">
+    <p>Bu sürüm bağımsız (claude.ai dışı) çalışır: kayıtlar data/reviews.js dosyasındaki anlık görüntüden okunur. Yeni incelemeler bu dosya güncellenince görünür.</p>
+    <p>Bir hisse birden fazla kez incelendiyse tablolarda en son v9+ inceleme kullanılır; öncekiler hisse ayrıntısında ve kayıt defterinde durur. v9 öncesi incelemeler farklı bir ölçekle puanlandığı için varsayılan olarak gizlidir.</p>
+    <p class="muted">Temel veriler inceleme günündeki değerlerdir, canlı fiyat değildir.</p>
+  </div></div>`;
+}
+
+// ---------- çekmece ----------
+const dataModeLabel = mode => mode==="model_draft"?"Yerel model taslağı":mode==="manual_import"?"Manuel aktarım":"Eski arşiv kaydı";
+const statusTime = value => {
+  if(!value || !Number.isFinite(new Date(value).getTime())) return "Bilinmiyor";
+  return new Intl.DateTimeFormat("tr-TR",{dateStyle:"short",timeStyle:"short",timeZone:"Europe/Istanbul"}).format(new Date(value));
+};
+function dataStatusHtml(r){
+  const meta=r.dataStatus;
+  return `<section class="data-status" aria-label="Veri durumu">
+    <b>Veri durumu</b><div class="status-tags"><span class="status-tag">${dataModeLabel(meta.mode)}</span><span class="status-tag">${r.age<0?"Tarih kontrolü gerekli":"Tarihsel inceleme"}</span></div>
+    <dl><dt>İnceleme</dt><dd>${esc(r.dstr)} · ${esc(ago(r.age))}</dd>
+    <dt>Kaynak erişimi</dt><dd>${esc(statusTime(meta.source_observed_at))}</dd>
+    <dt>Kaynak doğrulaması</dt><dd>${meta.source_values_verified?"Doğrulandı olarak kayıtlı":"Bağımsız doğrulama kaydı yok"}</dd>
+    <dt>Hesap kaydı</dt><dd>${meta.calculation_recorded?"Tam girdi ve hesap saklandı":"Tam girdi/hesap bilgisi bu özette yok"}</dd></dl>
+    <p class="status-note">İnceleme tarihi, kaynak verisinin güncel olduğunu tek başına göstermez. Görünen fiyat inceleme paketindeki fiyattır.</p>
+    ${meta.criteria_recomputed?`<p class="status-note">Kriter dökümü sonradan yeniden üretildi; arşivdeki eski toplam korunmuştur.</p>`:""}
+    ${r.age>21?`<p class="status-note">Bu inceleme üç haftadan eski; yenileme sırasına alınabilir.</p>`:""}
+  </section>`;
+}
+function renderProjectStatus(){
+  const summary=window.HIP_STATUS;
+  if(!summary || summary.schema_version!==1 || !summary.usage || !summary.usage.tokens || !Array.isArray(summary.usage.issues) || !summary.record_modes){
+    $("project-status").innerHTML=`<div class="panel panel-b"><h2 class="h2">Durum özeti henüz hazırlanmadı</h2><p>Paneli Baslat.command ile yeniden açınca özet hazırlanır.</p></div>`;
+    return;
+  }
+  const usage=summary.usage, tokens=usage.tokens;
+  const cards=[["Tamamlanan model çağrısı",usage.completed_calls,"Bu projedeki kayıtlı çağrılar"],
+    ["Girdi tokenı",tokens.input_tokens,"Raporlanan tüketim"],["Çıktı tokenı",tokens.output_tokens,"Raporlanan tüketim"],
+    ["Önbellekten okuma",usage.cache_reads_since_tracking,"Yeni sayaç döneminde"]];
+  $("project-status").innerHTML=`
+    <div><h2 class="h2">Proje durumu ve model kullanımı</h2><p class="status-note">Özet: ${esc(statusTime(summary.generated_at))} · İstanbul saati. Açılış ve veri/yorum aktarım komutları bu özeti yeniler.</p></div>
+    <div class="kpis">${cards.map(([title,value,note])=>`<div class="kpi"><span>${title}</span><b>${NF[0].format(value)}</b><span>${note}</span></div>`).join("")}</div>
+    <div class="panel"><div class="panel-h"><h3 class="h2">Tüketimi nasıl okumalı?</h3></div><div class="panel-b">
+      <p>Bu sayılar yalnız bu projede kaydedilen kullanımdır. <b>ChatGPT aboneliğinde kalan kota veya ücret değildir.</b></p>
+      <p>Eski model çağrıları sonuç dosyalarından sayıldı. Eski önbellek okumalarının toplamı bilinmiyor; yeni sayaç ${usage.tracking_started_at?esc(statusTime(usage.tracking_started_at))+" itibarıyla":"ilk kayıtla birlikte"} ölçer. Sayacı göstermek için model çağrısı yapılmaz.</p>
+      <p class="status-note">Girdi tokenı içindeki önbellekli kısım: ${NF[0].format(tokens.cached_input_tokens)}. Toplama tekrar eklenmez. Token bilgisi eksik çağrı: ${usage.usage_unknown_calls}. Başarısız/kesilmiş: ${usage.failed_or_interrupted}. Tamamlanması kaydedilmemiş: ${usage.in_progress}.</p>
+      ${usage.issues.length?`<p class="dn">${usage.issues.map(esc).join(" ")}</p>`:""}
+    </div></div>
+    <div class="panel"><div class="panel-h"><h3 class="h2">Arşivin veri durumu</h3></div><div class="panel-b">
+      <p>${summary.panel_records} inceleme kaydı var. Kaynak erişim zamanı kaydedilmemiş kayıt: ${summary.missing_source_time}.</p>
+      <table class="hist"><tbody>${["legacy_archive","manual_import","model_draft"].map(mode=>`<tr><td>${dataModeLabel(mode)}</td><td>${summary.record_modes[mode]||0}</td></tr>`).join("")}</tbody></table>
+      <p class="status-note">Kaynak erişiminin bilinmemesi, inceleme tarihinin yanlış olduğu anlamına gelmez. Kaynakların ne zaman okunduğunu ayrıca bilmiyoruz. Her hissenin ayrıntısında kendi veri durumu görünür.</p>
+    </div></div>`;
+}
+function openDrawer(t){
+  const r = latestOf(t); if(!r) return;
+  S.open = t; S.lastFocus = document.activeElement;
+  const sc = r.tot ?? 0;
+  const facts = [
+    ["Fiyat (inceleme)",money(r.p)],["Piyasa değeri",mcap(r.mc)],["İleri F/K",f(r.fk)],
+    ["EPS bu yıl → gelecek yıl",`${f(r.ey,2)} → ${f(r.eu,2)}`],["EPS büyümesi (gelecek yıl)",pct(r.epsg)],["3Y EPS büyüme tahmini",pct(r.gEps)],
+    ["Konsensüs hedefe",pct(r.up)],["Analist",r.an?`${r.an}${r.dr?" · "+r.dr:""}`:"–"],["Fiyat / 50g ort.",pct(r.m50)],
+    ["Son çeyrek gelir",pct(r.g1)],["3Y gelir büyümesi",pct(r.g2)],["Brüt marj",pct(r.bm,0,false)],
+    ["Faaliyet marjı",pct(r.fm,0,false)],["FCF marjı",pct(r.fcm,0,false)],["FCF getirisi",pct(r.fcy,1,false)],
+    ["ROIC",pct(r.ro,0,false)],["Net borç / FAVÖK",r.nc?"net nakit":f(r.nbf,2)],["Hisse sayısı değişimi",pct(r.H.hd,1)],
+    ["Açığa satış",pct(r.sh,1,false)],["Temettü verimi",pct(r.dy,2,false)],["Piotroski · Altman Z",`${r.H.pf??"–"} · ${f(r.H.az)}`],
+  ];
+  const su = (r.H.su||[]).slice(0,4);
+  const hs = r.H.hs||"";
+  const critHtml = Object.keys(r.s).length ? DIMS.map(([D,ad])=>`<div><div class="eyebrow" style="margin-bottom:4px">${ad}</div><div class="critdim">${Object.keys(CRIT).filter(k=>k[0]===D).map(k=>{ const v=r.s[k];
+      const val = v==="NM"?`<span class="cv muted">NM</span>`:v==null?`<span class="cv muted">–</span>`:`<span class="cv heat c${band(v*5)}">${f(v*5)}</span>`;
+      return `<div class="cc" title="${CRIT[k]}"><b>${k}</b><span class="nm">${CRIT[k]}</span>${val}</div>`; }).join("")}</div></div>`).join("") : `<p class="foot">Bu kayıtta kriter dökümü yok (v9 öncesi biçim).</p>`;
+  const hist = [...r.hist].reverse();
+  const note = S.prefs.notes[t] || "";
+  $("drawer").innerHTML = `
+    <div class="dr-head">
+      <div class="dr-top"><button class="star" data-star="${esc(t)}" aria-pressed="${isStar(t)}" aria-label="İzleme listesi" style="font-size:20px">★</button>
+        <h2 id="dr-t">${esc(t)}</h2><span class="pill c${r.band}">${NOTE_TR[r.not]||esc(r.not)}</span>
+        <button class="x" id="dr-x" aria-label="Kapat">×</button></div>
+      <div class="dr-meta"><span><b>${esc(r.sec)}</b></span><span>${esc(r.dstr)} · ${ago(r.age)}</span><span>${esc(r.v)}</span><span>Kapsam <b>${r.kn??"–"}/${r.kp??"–"}</b></span>${r.legacy?`<span class="dn">v9 öncesi kayıt</span>`:""}</div>
+    </div>
+    <div class="dr-body">
+      <p class="dr-tema">${esc(r.tema)}</p>
+      ${dataStatusHtml(r)}
+      ${r.analysisText?`<details class="analysis-report report-details" aria-label="Analiz metni">
+        <summary>Analiz metni · ${esc(r.dstr)} · ${esc(r.reportMode)}</summary>
+        ${r.importWarnings.length?`<div class="report-note"><b>Aktarım ve veri notları</b><ul>${r.importWarnings.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>`:""}
+        <div class="report-text report-rendered">${reportHtml(r.analysisText)}</div>
+        ${r.sourceNote?`<details class="report-details"><summary>Kaynaklar ve veri tarihi</summary><div class="report-text">${esc(r.sourceNote)}</div></details>`:""}
+      </details>`:""}
+      <div class="score-head">
+        <div class="big">${f(r.tot,2)}<small> /10</small></div>
+        <div class="scale" aria-hidden="true"><div class="track"><i class="c0"></i><i class="c1"></i><i class="c2"></i><i class="c3"></i><i class="c4"></i></div>
+          <span class="mk" style="left:${Math.min(100,sc*10)}%"></span>
+          <div class="ticks">${[["3,5",35],["5,0",50],["6,8",68],["8,0",80]].map(([a,b])=>`<span style="left:${b}%">${a}</span>`).join("")}</div></div>
+      </div>
+      <div><div class="sec-h"><h3 class="h2">Boyutlar</h3><span class="foot">toplama girer · ağırlık</span></div>
+        <div class="dims">${DIMS.map(([k,ad,w])=>`<div class="dimrow"><span>${ad}${r.mark[k]?" †":""}</span><span class="bar c${band(r[k])}"><i style="width:${(r[k]??0)*10}%"></i></span><span class="v">${f(r[k])}</span><span class="w">%${w}</span></div>`).join("")}</div>
+        ${r.kur.length?`<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">${rulesHtml(r.kur)}<span class="foot">${r.kur.map(k=>RULES[k]||k).join(" · ")}</span></div>`:""}
+      </div>
+      <div><div class="sec-h"><h3 class="h2">Ek göstergeler</h3><span class="foot">toplama girmez</span></div>
+        <div class="extra"><div><span>Kalite</span><b>${f(r.kal)}</b><span>fiyattan bağımsız; 5 ≈ sektör tipiği</span></div><div><span>Sektörüne göre</span><b>${f(r.sek)}</b><span>${esc(r.sec)} içinde konum</span></div></div></div>
+      <div><div class="sec-h"><h3 class="h2">Kriter dökümü</h3><span class="foot">0–10</span></div><div class="critgrid">${critHtml}</div>
+        ${r.yeniden?`<p class="foot" style="margin-top:8px">Bu kaydın kriter dökümü ve ek göstergeleri arşivdeki ham veriden yeniden hesaplandı.</p>`:""}</div>
+      <div><div class="sec-h"><h3 class="h2">Temel veriler</h3><span class="foot">inceleme günü</span></div>
+        <div class="facts">${facts.map(([a,b])=>`<div><span>${a}</span><b>${b}</b></div>`).join("")}</div></div>
+      ${su.length||hs?`<div style="display:grid;gap:12px">
+        ${su.length?`<div><div class="eyebrow" style="margin-bottom:6px">Son 4 çeyrek EPS sürprizi · yeniden eskiye</div><div class="seq">${su.map(v=>`<span class="${v==null?"":v>0?"up":v<0?"dn":""}">${v==null?"–":pct(v,1)}</span>`).join("")}</div></div>`:""}
+        ${hs?`<div><div class="eyebrow" style="margin-bottom:6px">Son 90 gün analist aksiyonları · yeniden eskiye</div><div class="seq">${[...hs].map(c=>`<span class="${c==="+"?"up":c==="-"?"dn":"muted"}">${c==="+"?"▲":c==="-"?"▼":"•"}</span>`).join("")}</div></div>`:""}
+      </div>`:""}
+      <div><div class="sec-h"><h3 class="h2">İnceleme geçmişi</h3><span class="foot">${hist.length} kayıt</span></div>
+        <table class="hist"><tbody>${hist.map(h=>`<tr><td class="num">${esc(h.dstr)}</td><td class="muted">${esc(h.v)}</td><td class="num">${f(h.p,2)}</td><td class="num" style="font-weight:600">${f(h.tot,2)}</td><td><span class="pill c${h.band}">${NOTE_TR[h.not]||esc(h.not)}</span></td></tr>`).join("")}</tbody></table>
+        ${hist.length>1?`<p class="foot" style="margin-top:6px">Farklı sürümlerin toplamları birebir karşılaştırılamaz; v9 öncesi ölçek farklıdır.</p>`:""}</div>
+      <div><div class="sec-h"><h3 class="h2">Notum</h3><span class="foot" id="note-st">${S.prefsRef?"bu tarayıcıda saklanır":"kaydedilemiyor"}</span></div>
+        <textarea class="note-area" id="note-in" placeholder="Bu hisse için kendi notunuz: tez, izlenecek gelişme, giriş seviyesi…" ${S.prefsRef?"":"disabled"}>${esc(note)}</textarea></div>
+      <div class="dr-actions"><button class="btn primary" data-cmp-add="${esc(t)}">Karşılaştırmaya ekle</button></div>
+    </div>`;
+  $("drawer").hidden = false; $("scrim").hidden = false;
+  $("dr-x").focus();
+  try{ history.replaceState(null,"","#"+t); }catch(e){}
+}
+function closeDrawer(){ $("drawer").hidden = true; $("scrim").hidden = true; S.open = null;
+  try{ history.replaceState(null,"","#"+S.tab); }catch(e){}
+  if(S.lastFocus && S.lastFocus.focus) S.lastFocus.focus(); }
+
+// ---------- kişisel tercihler ----------
+function savePrefs(){
+  const saved=store.set("prefs",{stars:S.prefs.stars,notes:S.prefs.notes});
+  const st=$("note-st"); if(st) st.textContent=saved?"kaydedildi":"kaydedilemedi";
+  if(!saved) toast("Kişisel tercih kaydedilemedi.");
+}
+function toggleStar(t){
+  const i = S.prefs.stars.indexOf(t);
+  if(i>=0) S.prefs.stars.splice(i,1); else S.prefs.stars.push(t);
+  if(!S.prefsRef) store.set("stars",S.prefs.stars);
+  savePrefs();
+  document.querySelectorAll(`[data-star="${CSS.escape(t)}"]`).forEach(b=>b.setAttribute("aria-pressed",isStar(t)));
+  if(S.f.star) renderTable();
+}
+function toast(msg){ const el=$("toast"); el.textContent=msg; el.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>el.hidden=true,2600); }
+
+// ---------- sekmeler ----------
+function setTab(tab){
+  if(!TAB_IDS.includes(tab)) tab="genel";
+  S.tab = tab; store.set("tab",tab);
+  document.querySelectorAll(".tab").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===tab));
+  TAB_IDS.forEach(id=>$("v-"+id).hidden = id!==tab || !S.ready);
+  if(!S.ready) return;
+  renderTab();
+  if(!S.open){ try{ history.replaceState(null,"","#"+tab); }catch(e){} }
+}
+function renderTab(){
+  if(S.tab==="genel") renderOverview();
+  else if(S.tab==="tarama"){ renderPresets(); renderNoteFilter(); renderTable(); }
+  else if(S.tab==="sektor") renderSectors();
+  else if(S.tab==="karsilastir") renderCompare();
+  else if(S.tab==="defter") renderLog();
+  else if(S.tab==="yontem") renderMethod();
+}
+
+// ---------- olaylar ----------
+document.addEventListener("click",(e)=>{
+  const t = e.target.closest("[data-tab],[data-open],[data-star],[data-preset],[data-preset-go],[data-fnot],[data-view],[data-sort],[data-sec],[data-dist],[data-go],[data-cmp-add],[data-cmp-del],[data-log],[data-more],#log-more button,#reset,#csv,#cmp-add,#dr-x,#scrim,[data-sugg]");
+  if(!t) return;
+  if(t.dataset.tab){ setTab(t.dataset.tab); return; }
+  if(t.dataset.star){ e.stopPropagation(); toggleStar(t.dataset.star); return; }
+  if(t.dataset.sugg){ hideSugg(); openDrawer(t.dataset.sugg); return; }
+  if(t.dataset.open){ openDrawer(t.dataset.open); return; }
+  if(t.dataset.preset){ S.preset = S.preset===t.dataset.preset ? null : t.dataset.preset; S.limit=200; renderPresets(); renderTable(); return; }
+  if(t.dataset.presetGo){ S.preset = t.dataset.presetGo; setTab("tarama"); return; }
+  if(t.dataset.fnot!=null && t.dataset.fnot!==""){ const i=+t.dataset.fnot; S.f.notes.has(i)?S.f.notes.delete(i):S.f.notes.add(i); renderNoteFilter(); renderTable(); return; }
+  if(t.dataset.view){ S.view=t.dataset.view; store.set("view",S.view); renderTable(); return; }
+  if(t.dataset.sort){ const k=t.dataset.sort; S.sort = S.sort.k===k ? {k,dir:-S.sort.dir} : {k,dir:["t","sec","kur"].includes(k)?1:-1}; renderTable(); return; }
+  if(t.dataset.sec){ S.f.sec=t.dataset.sec; S.preset=null; fillSectors(); setTab("tarama"); return; }
+  if(t.dataset.dist){ S.f.notes=new Set([+t.dataset.dist]); S.preset=null; setTab("tarama"); return; }
+  if(t.dataset.go){ setTab(t.dataset.go); return; }
+  if(t.dataset.cmpAdd){ addCmp(t.dataset.cmpAdd); return; }
+  if(t.dataset.cmpDel){ S.cmp=S.cmp.filter(x=>x!==t.dataset.cmpDel); renderCompare(); return; }
+  if(t.dataset.log){ S.logMode=t.dataset.log; S.logLimit=150; renderLog(); return; }
+  if(t.dataset.more){ S.limit+=300; renderTable(); return; }
+  if(t.closest("#log-more")){ S.logLimit+=200; renderLog(); return; }
+  if(t.id==="reset"){ resetFilters(); return; }
+  if(t.id==="csv"){ exportCsv(); return; }
+  if(t.id==="cmp-add"){ addCmp($("cmp-in").value); return; }
+  if(t.id==="dr-x"||t.id==="scrim"){ closeDrawer(); return; }
+});
+function addCmp(t){
+  t = String(t||"").trim().toUpperCase(); if(!t) return;
+  if(!S.M.byT.has(t)){ toast(`${t} arşivde yok.`); return; }
+  if(!S.cmp.includes(t)){ if(S.cmp.length>=4){ toast("En fazla 4 hisse karşılaştırılabilir."); return; } S.cmp.push(t); }
+  $("cmp-in").value=""; store.set("cmp",S.cmp);
+  if(S.open) closeDrawer();
+  setTab("karsilastir");
+}
+function resetFilters(){
+  S.f = {notes:new Set(), sec:"", size:"", mins:{}, star:false, cash:false, div:false, full:false, noc:false, stale:false, legacy:false};
+  S.preset = null; $("q").value = ""; S.limit=200;
+  document.querySelectorAll(".mins input").forEach(i=>i.value="");
+  document.querySelectorAll(".toggles input").forEach(i=>i.checked=false);
+  $("f-size").value=""; fillSectors(); renderPresets(); renderNoteFilter(); renderTable();
+}
+document.querySelectorAll(".mins input").forEach(inp=>inp.addEventListener("input",()=>{
+  const k = inp.id.slice(2); const v = inp.value==="" ? null : parseFloat(inp.value.replace(",","."));
+  S.f.mins[k] = isFinite(v) ? v : null; renderTable(); }));
+[["t-star","star"],["t-cash","cash"],["t-div","div"],["t-full","full"],["t-noc","noc"],["t-stale","stale"],["t-legacy","legacy"]].forEach(([id,k])=>
+  $(id).addEventListener("change",e=>{ S.f[k]=e.target.checked; renderTable(); }));
+$("f-sec").addEventListener("change",e=>{ S.f.sec=e.target.value; renderTable(); });
+$("f-size").addEventListener("change",e=>{ S.f.size=e.target.value; renderTable(); });
+$("cmp-in").addEventListener("keydown",e=>{ if(e.key==="Enter") addCmp(e.target.value); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if(!$("sugg").hidden) hideSugg(); else if(S.open) closeDrawer(); } });
+document.addEventListener("input",e=>{ if(e.target.id==="note-in" && S.open){ const v=e.target.value; if(v.trim()) S.prefs.notes[S.open]=v; else delete S.prefs.notes[S.open]; const st=$("note-st"); if(st) st.textContent="kaydediliyor…"; savePrefs(); } });
+
+// arama: öneri listesi + tarama süzgeci
+function hideSugg(){ $("sugg").hidden = true; }
+$("q").addEventListener("input",()=>{
+  const q = $("q").value.trim().toUpperCase();
+  if(S.tab==="tarama") renderTable();
+  if(!q){ hideSugg(); return; }
+  const qq = q.toLocaleLowerCase("tr-TR");
+  const hits = S.M.tickers.filter(r=>r.t.startsWith(q)).concat(S.M.tickers.filter(r=>!r.t.startsWith(q)&&(r.tema.toLocaleLowerCase("tr-TR").includes(qq)||r.sec.includes(qq)))).slice(0,8);
+  $("sugg").innerHTML = hits.map((r,i)=>`<button role="option" data-sugg="${esc(r.t)}" aria-selected="${i===0}"><span class="mono" style="font-weight:600;min-width:56px">${esc(r.t)}</span><span class="pill c${r.band}">${NOTE_TR[r.not]||""}</span><small>${esc(r.tema)}</small></button>`).join("") || `<div class="empty-note" style="padding:10px 12px">Eşleşen hisse yok</div>`;
+  $("sugg").hidden = false;
+});
+$("q").addEventListener("keydown",e=>{ if(e.key==="Enter"){ const b=$("sugg").querySelector("[data-sugg]"); if(b){ hideSugg(); openDrawer(b.dataset.sugg); } } });
+document.addEventListener("click",e=>{ if(!e.target.closest(".search")) hideSugg(); });
+
+// saçılım ipucu
+document.addEventListener("pointerover",e=>{ const c=e.target.closest("circle[data-tip]"); const tip=$("tip"); if(!tip) return;
+  if(!c){ tip.hidden=true; return; } const r=latestOf(c.dataset.tip); const box=$("scatter").getBoundingClientRect(), cb=c.getBoundingClientRect();
+  tip.innerHTML=`<b>${esc(r.t)}</b> · ${NOTE_TR[r.not]} · toplam ${f(r.tot,2)}<br>Değerleme ${f(r.D)} · Kalite ${f(r.kal)}`;
+  let left = cb.left-box.left+cb.width/2; left = Math.max(90, Math.min(box.width-90, left));
+  tip.style.left=left+"px"; tip.style.top=(cb.top-box.top)+"px"; tip.hidden=false; });
+let rz; window.addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(S.ready&&S.tab==="genel") drawScatter(); },150); });
+
+// CSV
+async function exportCsv(){
+  const rows = S.rows || filtered();
+  const cols = [["Ticker",r=>r.t],["Tarih",r=>r.dstr],["Sürüm",r=>r.v],["Not",r=>r.not],["Toplam",r=>r.tot],["D",r=>r.D],["B",r=>r.B],["G",r=>r.G],["M",r=>r.M],["N",r=>r.N],
+    ["Kalite",r=>r.kal],["Sektöre göre",r=>r.sek],["Sektör",r=>r.sec],["Fiyat",r=>r.p],["Potansiyel %",r=>r.up],["İleri F/K",r=>r.fk],["FCF getirisi %",r=>r.fcy],
+    ["Kapsam",r=>r.kn!=null?`${r.kn}/${r.kp}`:""],["Kurallar",r=>r.kur.join(",")],["Tema",r=>r.tema]];
+  const cell = v => { if(v==null) return ""; if(typeof v==="number") return NF[2].format(v); const s=String(v); return /[;"\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+  const csv = "\uFEFF"+cols.map(c=>c[0]).join(";")+"\n"+rows.map(r=>cols.map(c=>cell(c[1](r))).join(";")).join("\n");
+  try{ const u=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"})); const a=document.createElement("a");
+    a.href=u; a.download=`hisse-tarama-${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(u),2000); }
+  catch(e){ toast("CSV kaydedilemedi."); }
+}
+
+// ---------- veri ----------
+function ingest(docs){
+  S.M = build(docs);
+  S.ready = true;
+  $("state").hidden = true;
+  const L = live();
+  const lastRev = S.M.revs[S.M.revs.length-1];
+  $("sub").textContent = `ABD hisseleri · ${L.length} hisse · ${S.M.revs.length} inceleme kaydı · son kayıt ${lastRev?lastRev.dstr:"–"}`;
+  $("cnt-tarama").textContent = L.length;
+  fillSectors();
+  setTab(S.tab);
+  if(S.open && $("drawer").hidden===false && document.activeElement?.id!=="note-in"){ const keep=S.open, lf=S.lastFocus; openDrawer(keep); S.lastFocus=lf; }
+}
+function showState(h,p){ $("state").innerHTML = `<h3>${h}</h3><p>${p}</p>`; $("state").hidden=false; }
+
+async function start(){
+  const hash = (location.hash||"").slice(1);
+  const tabs = TAB_IDS;
+  S.tab = tabs.includes(hash) ? hash : store.get("tab","genel");
+  const pendingOpen = hash && !tabs.includes(hash) ? hash.toUpperCase() : null;
+  if(window.innerWidth<700) $("fwrap").removeAttribute("open");
+  setTab(S.tab);
+  const savedStars=store.get("stars",[]);
+  S.prefs.stars = Array.isArray(savedStars)?savedStars.filter(t=>typeof t==="string"):[];
+  const docs = Array.isArray(window.HIP_DATA) ? window.HIP_DATA : null;
+  if(!docs){ showState("Veri dosyası bulunamadı","data/reviews.js yüklenemedi. index.html ile data klasörünün aynı yerde durduğundan emin olun."); return; }
+  if(!docs.length){ showState("Henüz kayıt yok","data/reviews.js içinde inceleme kaydı yok."); return; }
+  // kişisel: izleme listesi ve notlar — bu tarayıcıda (localStorage) saklanır
+  S.prefsRef = { get: async()=>{ const v=store.get("prefs",null); return {exists:!!v, data:()=>v}; }, set: async(v)=>{ store.set("prefs",v); } };
+  try{ const p = await S.prefsRef.get(); if(p.exists){ const d=p.data()||{}; S.prefs.stars = Array.isArray(d.stars)?[...new Set(d.stars.filter(t=>typeof t==="string"))]:S.prefs.stars; S.prefs.notes = d.notes && typeof d.notes==="object" && !Array.isArray(d.notes)?Object.fromEntries(Object.entries(d.notes).filter(([,value])=>typeof value==="string")):{}; } }
+  catch(e){}
+  ingest(docs);
+  if(pendingOpen && S.M.byT.has(pendingOpen)){ openDrawer(pendingOpen); }
+}
+window.addEventListener("hashchange",()=>{
+  const h = (location.hash||"").slice(1); if(!h) return;
+  const tabs = TAB_IDS;
+  if(tabs.includes(h)){ if(S.open) closeDrawer(); setTab(h); }
+  else if(S.ready && S.M.byT.has(h.toUpperCase())) openDrawer(h.toUpperCase());
+});
+start();
+})();
+</script>
+
+</body></html>
